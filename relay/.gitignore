@@ -141,3 +141,6 @@ fabric.properties
 
 .task
 kumapush-relay
+.env
+authkey.p8
+authkey.dev.p8

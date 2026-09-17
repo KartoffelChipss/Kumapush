@@ -6,12 +6,14 @@ tasks:
     deps:
       - install-backend
     env:
+      ENV: development
       PORT: 3000
       DATABASE_USER: kumapush
       DATABASE_PASSWORD: thisisasupersecretpasswordnoonewilleverbeabletoguess
       DATABASE_NAME: kumapush
       DATABASE_HOST: localhost
       DATABASE_PORT: 5432
+    dotenv: ['.env']
     cmds:
       - go run main.go
 

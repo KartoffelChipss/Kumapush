@@ -38,8 +38,7 @@ func (r *DeviceRepository) Create(ctx context.Context, deviceToken string) (*mod
         RETURNING date_added
     `, id, deviceToken).Scan(&dateAdded)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == uniqueViolationCode {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgErr.Code == uniqueViolationCode {
 			return nil, ErrDeviceTokenExists
 		}
 		return nil, err

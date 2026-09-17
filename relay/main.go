@@ -7,6 +7,7 @@ import (
 	"kumapush-relay/env"
 	"kumapush-relay/handler"
 	"kumapush-relay/repository"
+	"kumapush-relay/service"
 	"log/slog"
 	"os"
 
@@ -25,6 +26,12 @@ func main() {
 
 	if err := database.Migrate(ctx); err != nil {
 		slog.Error("migration failed", "error", err)
+		os.Exit(1)
+	}
+
+	notificationService, err := service.NewNotificationService(env.APNSAuthKeyPath(), env.APNSKeyID(), env.APNSTeamID(), env.AppBundleIdentifier(), env.IsDevelopment())
+	if err != nil {
+		slog.Error("unable to create notification service", "error", err)
 		os.Exit(1)
 	}
 
@@ -49,7 +56,7 @@ func main() {
 	deviceHandler := handler.NewDeviceHandler(deviceRepository)
 	deviceHandler.RegisterRoutes(app)
 
-	webhookHandler := handler.NewWebhookHandler(deviceRepository)
+	webhookHandler := handler.NewWebhookHandler(deviceRepository, notificationService)
 	webhookHandler.RegisterRoutes(app)
 
 	slog.Info("Server starting", "port", env.Port(), "fiber", fiber.Version)

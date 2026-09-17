@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"kumapush-relay/service"
 	"log/slog"
 
 	"kumapush-relay/models"
@@ -10,11 +11,12 @@ import (
 )
 
 type WebhookHandler struct {
-	deviceRepo *repository.DeviceRepository
+	deviceRepo          *repository.DeviceRepository
+	notificationService *service.NotificationService
 }
 
-func NewWebhookHandler(deviceRepo *repository.DeviceRepository) *WebhookHandler {
-	return &WebhookHandler{deviceRepo: deviceRepo}
+func NewWebhookHandler(deviceRepo *repository.DeviceRepository, notificationService *service.NotificationService) *WebhookHandler {
+	return &WebhookHandler{deviceRepo: deviceRepo, notificationService: notificationService}
 }
 
 func (wh *WebhookHandler) RegisterRoutes(router fiber.Router) {
@@ -27,27 +29,25 @@ func (wh *WebhookHandler) handleWebhook(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "deviceId is required"})
 	}
 
-	_, err := wh.deviceRepo.GetById(c.Context(), deviceId)
+	device, err := wh.deviceRepo.GetById(c.Context(), deviceId)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(models.APIError{Error: "device not found"})
 	}
 
-	var payload models.KumaWebhookPayload
-	if err := c.Bind().Body(&payload); err != nil {
+	var whPayload models.KumaWebhookPayload
+	if err := c.Bind().Body(&whPayload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid request body"})
 	}
 
-	status := "offline"
-	if payload.IsUp() {
-		status = "online"
+	res, err := wh.notificationService.SendNotification(device.DeviceToken, service.GeneratePayload(whPayload))
+	if err != nil {
+		slog.Error("Failed to send notification", "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIError{Error: "failed to send notification"})
 	}
-
-	slog.Info("Received Uptime Kuma webhook",
-		"deviceId", deviceId,
-		"monitor", payload.Monitor.Name,
-		"status", status,
-		"message", payload.Heartbeat.Msg,
-	)
+	if !res.Sent() {
+		slog.Error("APNs rejected notification", "deviceId", deviceId, "statusCode", res.StatusCode, "reason", res.Reason)
+		return c.Status(fiber.StatusBadGateway).JSON(models.APIError{Error: "notification rejected by APNs"})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{})
 }
