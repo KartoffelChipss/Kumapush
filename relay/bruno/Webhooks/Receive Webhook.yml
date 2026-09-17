@@ -8,7 +8,7 @@ http:
   url: "{{base-url}}/wh/:deviceId"
   params:
     - name: deviceId
-      value: NyAAJ3yD4Q0dZC
+      value: pAmWVye1XRuYZx
       type: path
   body:
     type: json
@@ -128,3 +128,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

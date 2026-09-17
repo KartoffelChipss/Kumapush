@@ -22,6 +22,8 @@ final class AppViewModel: ObservableObject {
     @Published var relayOption: RelayOption = .defaultRelay
     @Published var customRelayAddress: String = ""
 
+    var currentRelayURL: URL { relay.baseURL }
+
     private let relay: RelayClient
     private let pushRegistrar: PushRegistrar
     private var store: DeviceStore
