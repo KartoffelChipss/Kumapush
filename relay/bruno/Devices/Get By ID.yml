@@ -8,7 +8,7 @@ http:
   url: "{{base-url}}/devices/:id"
   params:
     - name: id
-      value: e571d8ef-118d-41ef-a741-74873167afa3
+      value: 04084cb4-9366-4509-b095-43eb28bef55b
       type: path
   auth: inherit
 
