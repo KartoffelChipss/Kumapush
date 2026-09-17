@@ -49,6 +49,9 @@ func main() {
 	deviceHandler := handler.NewDeviceHandler(deviceRepository)
 	deviceHandler.RegisterRoutes(app)
 
+	webhookHandler := handler.NewWebhookHandler(deviceRepository)
+	webhookHandler.RegisterRoutes(app)
+
 	slog.Info("Server starting", "port", env.Port(), "fiber", fiber.Version)
 	if err := app.Listen(env.Port(), fiber.ListenConfig{
 		DisableStartupMessage: true,

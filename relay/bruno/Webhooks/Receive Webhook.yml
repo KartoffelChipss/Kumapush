@@ -1,0 +1,130 @@
+info:
+  name: Receive Webhook
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base-url}}/wh/:deviceId"
+  params:
+    - name: deviceId
+      value: 04084cb4-9366-4509-b095-43eb28bef55b
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "heartbeat": {
+          "important": true,
+          "localDateTime": "2026-09-17 18:11:57",
+          "monitorID": 21,
+          "msg": "Request failed with status code 503",
+          "response": "Site is currently unavailable",
+          "retries": 1,
+          "status": 0,
+          "time": "2026-09-17 16:11:57.050",
+          "timezone": "Europe/Berlin",
+          "timezoneOffset": "+02:00"
+        },
+        "monitor": {
+          "accepted_statuscodes": [
+            "200-299"
+          ],
+          "active": true,
+          "authMethod": null,
+          "cacheBust": false,
+          "childrenIDs": [],
+          "conditions": [],
+          "databaseQuery": null,
+          "description": null,
+          "dns_last_result": null,
+          "dns_resolve_server": "",
+          "dns_resolve_type": "A",
+          "docker_container": "",
+          "docker_host": null,
+          "domainExpiryNotification": true,
+          "expectedTlsAlert": null,
+          "expectedValue": null,
+          "expiryNotification": false,
+          "forceInactive": false,
+          "game": null,
+          "gamedigGivenPortOnly": true,
+          "grpcEnableTls": false,
+          "grpcMethod": null,
+          "grpcProtobuf": null,
+          "grpcServiceName": null,
+          "grpcUrl": null,
+          "hostname": null,
+          "httpBodyEncoding": "json",
+          "id": 21,
+          "ignoreTls": false,
+          "includeSensitiveData": false,
+          "interval": 20,
+          "invertKeyword": false,
+          "ipFamily": null,
+          "jsonPath": "$",
+          "jsonPathOperator": "==",
+          "kafkaProducerAllowAutoTopicCreation": false,
+          "kafkaProducerBrokers": [],
+          "kafkaProducerMessage": null,
+          "kafkaProducerSsl": false,
+          "kafkaProducerTopic": null,
+          "keyword": null,
+          "location": "world",
+          "maintenance": false,
+          "maxredirects": 10,
+          "maxretries": 0,
+          "method": "GET",
+          "mqttCheckType": "keyword",
+          "mqttSuccessMessage": "",
+          "mqttTopic": "",
+          "name": "tensura.jan.run",
+          "notificationIDList": {
+            "5": true
+          },
+          "packetSize": 56,
+          "parent": null,
+          "path": [
+            "tensura.jan.run"
+          ],
+          "pathName": "tensura.jan.run",
+          "ping_count": 3,
+          "ping_numeric": true,
+          "ping_per_request_timeout": 2,
+          "port": null,
+          "protocol": null,
+          "proxyId": null,
+          "rabbitmqNodes": [],
+          "radiusCalledStationId": null,
+          "radiusCallingStationId": null,
+          "remote_browser": null,
+          "resendInterval": 0,
+          "responseMaxLength": 1024,
+          "retryInterval": 20,
+          "retryOnlyOnStatusCodeFailure": false,
+          "saveErrorResponse": true,
+          "saveResponse": false,
+          "screenshot": null,
+          "smtpSecurity": null,
+          "snmpOid": null,
+          "snmpVersion": "2c",
+          "subtype": null,
+          "system_service_name": "",
+          "tags": [],
+          "timeout": 16,
+          "type": "http",
+          "upsideDown": false,
+          "url": "https://tensura.jan.run",
+          "weight": 2000,
+          "wsIgnoreSecWebsocketAcceptHeader": false,
+          "wsSubprotocol": ""
+        },
+        "msg": "[tensura.jan.run] [🔴 Down] Request failed with status code 503"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
