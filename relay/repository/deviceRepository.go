@@ -3,14 +3,15 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"kumapush-relay/models"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jaevor/go-nanoid"
 )
 
 var (
@@ -18,37 +19,54 @@ var (
 	ErrDeviceTokenExists = errors.New("device token already registered")
 )
 
-const uniqueViolationCode = "23505"
+const (
+	uniqueViolationCode = "23505"
+	idLength            = 14
+	maxIDCollisionTries = 5
+)
 
 type DeviceRepository struct {
-	pool *pgxpool.Pool
+	pool       *pgxpool.Pool
+	generateID func() string
 }
 
-func NewDeviceRepository(pool *pgxpool.Pool) *DeviceRepository {
-	return &DeviceRepository{pool: pool}
+func NewDeviceRepository(pool *pgxpool.Pool) (*DeviceRepository, error) {
+	generateID, err := nanoid.Standard(idLength)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create device id generator: %w", err)
+	}
+	return &DeviceRepository{pool: pool, generateID: generateID}, nil
 }
 
 func (r *DeviceRepository) Create(ctx context.Context, deviceToken string) (*models.Device, error) {
-	id := uuid.NewString()
+	for attempt := 0; attempt < maxIDCollisionTries; attempt++ {
+		id := r.generateID()
 
-	var dateAdded time.Time
-	err := r.pool.QueryRow(ctx, `
-        INSERT INTO devices (id, device_token)
-        VALUES ($1, $2)
-        RETURNING date_added
-    `, id, deviceToken).Scan(&dateAdded)
-	if err != nil {
-		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgErr.Code == uniqueViolationCode {
+		var dateAdded time.Time
+		err := r.pool.QueryRow(ctx, `
+            INSERT INTO devices (id, device_token)
+            VALUES ($1, $2)
+            RETURNING date_added
+        `, id, deviceToken).Scan(&dateAdded)
+		if err == nil {
+			return &models.Device{
+				Id:          id,
+				DeviceToken: deviceToken,
+				DateAdded:   dateAdded.Format(time.RFC3339),
+			}, nil
+		}
+
+		pgErr, ok := errors.AsType[*pgconn.PgError](err)
+		if !ok || pgErr.Code != uniqueViolationCode {
+			return nil, err
+		}
+		if pgErr.ConstraintName != "devices_pkey" {
 			return nil, ErrDeviceTokenExists
 		}
-		return nil, err
+		// Extremely unlikely id collision: retry with a freshly generated id.
 	}
 
-	return &models.Device{
-		Id:          id,
-		DeviceToken: deviceToken,
-		DateAdded:   dateAdded.Format(time.RFC3339),
-	}, nil
+	return nil, fmt.Errorf("failed to generate a unique device id after %d attempts", maxIDCollisionTries)
 }
 
 func (r *DeviceRepository) GetByDeviceToken(ctx context.Context, deviceToken string) (*models.Device, error) {

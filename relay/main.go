@@ -52,7 +52,11 @@ func main() {
 	app := fiber.New(fiberCfg)
 	appconfig.Setup(app)
 
-	deviceRepository := repository.NewDeviceRepository(database.Pool())
+	deviceRepository, err := repository.NewDeviceRepository(database.Pool())
+	if err != nil {
+		slog.Error("unable to create device repository", "error", err)
+		os.Exit(1)
+	}
 	deviceHandler := handler.NewDeviceHandler(deviceRepository)
 	deviceHandler.RegisterRoutes(app)
 
