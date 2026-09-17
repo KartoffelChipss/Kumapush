@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: kumapush_postgres
+    environment:
+      POSTGRES_USER: kumapush
+      POSTGRES_PASSWORD: thisisasupersecretpasswordnoonewilleverbeabletoguess
+      POSTGRES_DB: kumapush
+    volumes:
+      - postgres_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_db_data:

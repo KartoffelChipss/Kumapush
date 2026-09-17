@@ -1,0 +1,34 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Start Go backend
+    deps:
+      - install-backend
+    env:
+      PORT: 3000
+      DATABASE_USER: kumapush
+      DATABASE_PASSWORD: thisisasupersecretpasswordnoonewilleverbeabletoguess
+      DATABASE_NAME: kumapush
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+    cmds:
+      - go run main.go
+
+  install-backend:
+    internal: true
+    sources:
+      - go.mod
+      - go.sum
+    cmds:
+      - go mod download
+
+  db:up:
+    desc: Start PostgreSQL database
+    cmds:
+      - docker compose -f docker-compose-deps.yml up -d
+
+  db:down:
+    desc: Stop PostgreSQL database
+    cmds:
+      - docker compose -f docker-compose-deps.yml down
