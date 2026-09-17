@@ -8,7 +8,8 @@ enum RelayError: Error {
     case decoding(Error)
 }
 
-protocol RelayClient {
+protocol RelayClient: AnyObject {
+    var baseURL: URL { get set }
     func registerDevice(token: String) async throws -> Device
     func getDevice(byToken token: String) async throws -> Device
     func getDevice(byId id: String) async throws -> Device
@@ -16,10 +17,12 @@ protocol RelayClient {
 }
 
 final class HTTPRelayClient: RelayClient {
-    private let baseURL: URL
+    static let defaultRelayURL = URL(string: "https://kumapush.com")!
+
+    var baseURL: URL
     private let session: URLSession
 
-    init(baseURL: URL = URL(string: "http://localhost:3000")!, session: URLSession = .shared) {
+    init(baseURL: URL = HTTPRelayClient.defaultRelayURL, session: URLSession = .shared) {
         self.baseURL = baseURL
         self.session = session
     }

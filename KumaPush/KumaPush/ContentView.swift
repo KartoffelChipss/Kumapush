@@ -10,6 +10,8 @@ struct ContentView: View {
                 ProgressView()
             case .needsRegistration:
                 GetStartedView(
+                    relayOption: $viewModel.relayOption,
+                    customAddress: $viewModel.customRelayAddress,
                     isRegistering: viewModel.isRegistering,
                     errorMessage: viewModel.errorMessage,
                     onGetStarted: { Task { await viewModel.getStartedTapped() } }
@@ -31,12 +33,28 @@ struct ContentView: View {
 }
 
 private struct GetStartedView: View {
+    @Binding var relayOption: RelayOption
+    @Binding var customAddress: String
     let isRegistering: Bool
     let errorMessage: String?
     let onGetStarted: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
+            Picker("Relay", selection: $relayOption) {
+                Text("kumapush.com").tag(RelayOption.defaultRelay)
+                Text("Custom").tag(RelayOption.custom)
+            }
+            .pickerStyle(.segmented)
+
+            if relayOption == .custom {
+                TextField("http://localhost:3000", text: $customAddress)
+                    .textFieldStyle(.roundedBorder)
+                    .keyboardType(.URL)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+            }
+
             Button("Get Started", action: onGetStarted)
                 .disabled(isRegistering)
 
@@ -95,6 +113,7 @@ private struct RegisteredView: View {
 }
 
 private final class PreviewRelayClient: RelayClient {
+    var baseURL = HTTPRelayClient.defaultRelayURL
     func registerDevice(token: String) async throws -> Device {
         Device(id: "preview-id", deviceToken: token, lastSuccessfulNotification: "", dateAdded: "")
     }
@@ -113,4 +132,5 @@ private final class PreviewPushRegistrar: PushRegistrar {
 
 private final class PreviewDeviceStore: DeviceStore {
     var deviceId: String?
+    var relayBaseURL: URL?
 }
