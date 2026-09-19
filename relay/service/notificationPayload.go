@@ -8,6 +8,14 @@ import (
 )
 
 func GeneratePayload(whPayload models.KumaWebhookPayload, downLevel models.NotificationLevel) *payload.Payload {
+	if whPayload.IsTest() {
+		body := whPayload.Msg
+		if body == "" {
+			body = "Test notification"
+		}
+		return payload.NewPayload().AlertTitle("KumaPush").AlertBody(body).Sound("default")
+	}
+
 	status := "down"
 	if whPayload.IsUp() {
 		status = "up"

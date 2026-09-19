@@ -10,10 +10,15 @@ type KumaMonitor struct {
 }
 
 type KumaWebhookPayload struct {
-	Heartbeat KumaHeartbeat `json:"heartbeat"`
-	Monitor   KumaMonitor   `json:"monitor"`
+	Heartbeat *KumaHeartbeat `json:"heartbeat"`
+	Monitor   *KumaMonitor   `json:"monitor"`
+	Msg       string         `json:"msg"`
+}
+
+func (p KumaWebhookPayload) IsTest() bool {
+	return p.Heartbeat == nil || p.Monitor == nil
 }
 
 func (p KumaWebhookPayload) IsUp() bool {
-	return p.Heartbeat.Status == 1
+	return p.Heartbeat != nil && p.Heartbeat.Status == 1
 }
