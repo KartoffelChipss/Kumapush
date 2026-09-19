@@ -14,6 +14,9 @@ final class PreviewRelayClient: RelayClient {
     func getDevice(byId id: String) async throws -> Device {
         throw RelayError.notFound
     }
+    func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device {
+        Device(id: id, deviceToken: "preview-token", lastSuccessfulNotification: "", dateAdded: "", downNotificationLevel: downNotificationLevel)
+    }
     func unregisterDevice(token: String) async throws {}
 }
 

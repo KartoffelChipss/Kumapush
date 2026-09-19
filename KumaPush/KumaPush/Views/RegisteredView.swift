@@ -5,6 +5,7 @@ struct RegisteredView: View {
     let relayBaseURL: URL
     let isUnregistering: Bool
     let errorMessage: String?
+    let onDownLevelChange: (NotificationLevel) -> Void
     let onUnregister: () -> Void
 
     @State private var showingUnregisterConfirmation = false
@@ -49,6 +50,28 @@ struct RegisteredView: View {
                 InstructionStep(number: 3) {
                     Text("Set **Request Body** to **Preset – application/json**.")
                 }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 16))
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Down notifications")
+                    .font(.headline)
+
+                Picker("Down notifications", selection: Binding(
+                    get: { device.downNotificationLevel },
+                    set: onDownLevelChange
+                )) {
+                    ForEach(NotificationLevel.allCases) { level in
+                        Text(level.title).tag(level)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Text(device.downNotificationLevel.detail)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)

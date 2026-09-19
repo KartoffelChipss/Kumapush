@@ -50,9 +50,10 @@ func (r *DeviceRepository) Create(ctx context.Context, deviceToken string) (*mod
         `, id, deviceToken).Scan(&dateAdded)
 		if err == nil {
 			return &models.Device{
-				Id:          id,
-				DeviceToken: deviceToken,
-				DateAdded:   dateAdded.Format(time.RFC3339),
+				Id:                    id,
+				DeviceToken:           deviceToken,
+				DateAdded:             dateAdded.Format(time.RFC3339),
+				DownNotificationLevel: models.NotificationLevelNormal,
 			}, nil
 		}
 
@@ -71,7 +72,7 @@ func (r *DeviceRepository) Create(ctx context.Context, deviceToken string) (*mod
 
 func (r *DeviceRepository) GetByDeviceToken(ctx context.Context, deviceToken string) (*models.Device, error) {
 	return r.scanOne(ctx, `
-        SELECT id, device_token, last_successful_notification, date_added
+        SELECT id, device_token, last_successful_notification, date_added, down_notification_level
         FROM devices
         WHERE device_token = $1
     `, deviceToken)
@@ -79,10 +80,25 @@ func (r *DeviceRepository) GetByDeviceToken(ctx context.Context, deviceToken str
 
 func (r *DeviceRepository) GetById(ctx context.Context, id string) (*models.Device, error) {
 	return r.scanOne(ctx, `
-        SELECT id, device_token, last_successful_notification, date_added
+        SELECT id, device_token, last_successful_notification, date_added, down_notification_level
         FROM devices
         WHERE id = $1
     `, id)
+}
+
+func (r *DeviceRepository) UpdateDownNotificationLevel(ctx context.Context, id string, level models.NotificationLevel) (*models.Device, error) {
+	result, err := r.pool.Exec(ctx, `
+        UPDATE devices
+        SET down_notification_level = $2
+        WHERE id = $1
+    `, id, string(level))
+	if err != nil {
+		return nil, err
+	}
+	if result.RowsAffected() == 0 {
+		return nil, ErrDeviceNotFound
+	}
+	return r.GetById(ctx, id)
 }
 
 func (r *DeviceRepository) DeleteByDeviceToken(ctx context.Context, deviceToken string) error {
@@ -102,11 +118,12 @@ func (r *DeviceRepository) DeleteByDeviceToken(ctx context.Context, deviceToken 
 func (r *DeviceRepository) scanOne(ctx context.Context, query string, args ...any) (*models.Device, error) {
 	var (
 		id, deviceToken string
+		downLevel       string
 		lastNotified    *time.Time
 		dateAdded       time.Time
 	)
 
-	err := r.pool.QueryRow(ctx, query, args...).Scan(&id, &deviceToken, &lastNotified, &dateAdded)
+	err := r.pool.QueryRow(ctx, query, args...).Scan(&id, &deviceToken, &lastNotified, &dateAdded, &downLevel)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrDeviceNotFound
@@ -115,9 +132,10 @@ func (r *DeviceRepository) scanOne(ctx context.Context, query string, args ...an
 	}
 
 	device := &models.Device{
-		Id:          id,
-		DeviceToken: deviceToken,
-		DateAdded:   dateAdded.Format(time.RFC3339),
+		Id:                    id,
+		DeviceToken:           deviceToken,
+		DateAdded:             dateAdded.Format(time.RFC3339),
+		DownNotificationLevel: models.NotificationLevel(downLevel),
 	}
 	if lastNotified != nil {
 		device.LastSuccessfulNotification = lastNotified.Format(time.RFC3339)

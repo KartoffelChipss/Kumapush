@@ -23,6 +23,8 @@ func (d *DB) Migrate(ctx context.Context) error {
             date_added                   TIMESTAMPTZ NOT NULL DEFAULT now()
         );
 
+        ALTER TABLE devices ADD COLUMN IF NOT EXISTS down_notification_level TEXT NOT NULL DEFAULT 'normal';
+
         CREATE UNIQUE INDEX IF NOT EXISTS devices_device_token_key ON devices (device_token);
     `)
 

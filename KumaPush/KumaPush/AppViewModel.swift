@@ -81,6 +81,17 @@ final class AppViewModel: ObservableObject {
         }
     }
 
+    func downNotificationLevelChanged(to level: NotificationLevel) async {
+        guard case .registered(let device) = state, device.downNotificationLevel != level else { return }
+
+        errorMessage = nil
+        do {
+            state = .registered(try await relay.updateDevice(id: device.id, downNotificationLevel: level))
+        } catch {
+            errorMessage = "Could not update setting: \(Self.describe(error))"
+        }
+    }
+
     func unregisterTapped() async {
         guard case .registered(let device) = state else { return }
 

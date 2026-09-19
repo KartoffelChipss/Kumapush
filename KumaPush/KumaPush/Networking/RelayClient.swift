@@ -13,6 +13,7 @@ protocol RelayClient: AnyObject {
     func registerDevice(token: String) async throws -> Device
     func getDevice(byToken token: String) async throws -> Device
     func getDevice(byId id: String) async throws -> Device
+    func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device
     func unregisterDevice(token: String) async throws
 }
 
@@ -41,6 +42,14 @@ final class HTTPRelayClient: RelayClient {
 
     func getDevice(byId id: String) async throws -> Device {
         try await send(URLRequest(url: baseURL.appendingPathComponent("devices/\(id)")))
+    }
+
+    func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device {
+        var request = URLRequest(url: baseURL.appendingPathComponent("devices/\(id)"))
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["down_notification_level": downNotificationLevel.rawValue])
+        return try await send(request)
     }
 
     func unregisterDevice(token: String) async throws {

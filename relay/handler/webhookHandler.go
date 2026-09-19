@@ -39,7 +39,7 @@ func (wh *WebhookHandler) handleWebhook(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid request body"})
 	}
 
-	res, err := wh.notificationService.SendNotification(device.DeviceToken, service.GeneratePayload(whPayload))
+	res, err := wh.notificationService.SendNotification(device.DeviceToken, service.GeneratePayload(whPayload, device.DownNotificationLevel))
 	if err != nil {
 		slog.Error("Failed to send notification", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIError{Error: "failed to send notification"})

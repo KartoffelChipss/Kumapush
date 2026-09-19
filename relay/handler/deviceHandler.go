@@ -22,6 +22,7 @@ func (h *DeviceHandler) RegisterRoutes(router fiber.Router) {
 	router.Post("/devices", h.register)
 	router.Get("/devices/token/:token", h.getByDeviceToken)
 	router.Get("/devices/:id", h.getById)
+	router.Patch("/devices/:id", h.update)
 	router.Delete("/devices/token/:token", h.deleteByDeviceToken)
 }
 
@@ -44,6 +45,23 @@ func (h *DeviceHandler) register(c fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(device)
+}
+
+func (h *DeviceHandler) update(c fiber.Ctx) error {
+	var req models.DeviceUpdateRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid request body"})
+	}
+
+	if !req.DownNotificationLevel.IsValid() {
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid down_notification_level"})
+	}
+
+	device, err := h.repo.UpdateDownNotificationLevel(c.Context(), c.Params("id"), req.DownNotificationLevel)
+	if err != nil {
+		return respondDeviceError(c, err)
+	}
+	return c.JSON(device)
 }
 
 func (h *DeviceHandler) getByDeviceToken(c fiber.Ctx) error {

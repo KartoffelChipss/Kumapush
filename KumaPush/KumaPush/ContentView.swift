@@ -24,6 +24,7 @@ struct ContentView: View {
                         relayBaseURL: viewModel.currentRelayURL,
                         isUnregistering: viewModel.isUnregistering,
                         errorMessage: viewModel.errorMessage,
+                        onDownLevelChange: { level in Task { await viewModel.downNotificationLevelChanged(to: level) } },
                         onUnregister: { Task { await viewModel.unregisterTapped() } }
                     )
                 }
