@@ -16,7 +16,7 @@ func Setup(app *fiber.App) {
 	app.Use(func(c fiber.Ctx) error {
 		start := time.Now()
 		err := c.Next()
-		slog.Debug("Request",
+		slog.Info("Request",
 			"status", c.Response().StatusCode(),
 			"method", c.Method(),
 			"path", c.Path(),
