@@ -65,14 +65,6 @@ func (r *DeviceRepository) Register(ctx context.Context, deviceToken, authTokenH
 	return nil, false, fmt.Errorf("failed to generate a unique device id after %d attempts", maxIDCollisionTries)
 }
 
-func (r *DeviceRepository) GetByDeviceToken(ctx context.Context, deviceToken string) (*models.Device, error) {
-	return r.scanOne(ctx, `
-        SELECT id, device_token, last_successful_notification, date_added, down_notification_level
-        FROM devices
-        WHERE device_token = $1
-    `, deviceToken)
-}
-
 func (r *DeviceRepository) GetById(ctx context.Context, id string) (*models.Device, error) {
 	return r.scanOne(ctx, `
         SELECT id, device_token, last_successful_notification, date_added, down_notification_level

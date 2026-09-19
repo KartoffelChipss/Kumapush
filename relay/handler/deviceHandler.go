@@ -20,7 +20,6 @@ func NewDeviceHandler(repo *repository.DeviceRepository) *DeviceHandler {
 
 func (h *DeviceHandler) RegisterRoutes(router fiber.Router) {
 	router.Post("/devices", h.register)
-	router.Get("/devices/token/:token", h.getByDeviceToken)
 	router.Get("/devices/:id", requireDeviceAuth(h.repo), h.getById)
 	router.Patch("/devices/:id", requireDeviceAuth(h.repo), h.update)
 	router.Delete("/devices/:id", requireDeviceAuth(h.repo), h.delete)
@@ -64,14 +63,6 @@ func (h *DeviceHandler) update(c fiber.Ctx) error {
 	}
 
 	device, err := h.repo.UpdateDownNotificationLevel(c.Context(), c.Params("id"), req.DownNotificationLevel)
-	if err != nil {
-		return respondDeviceError(c, err)
-	}
-	return c.JSON(device)
-}
-
-func (h *DeviceHandler) getByDeviceToken(c fiber.Ctx) error {
-	device, err := h.repo.GetByDeviceToken(c.Context(), c.Params("token"))
 	if err != nil {
 		return respondDeviceError(c, err)
 	}
