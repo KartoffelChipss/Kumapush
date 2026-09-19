@@ -15,5 +15,5 @@ func GeneratePayload(whPayload models.KumaWebhookPayload) *payload.Payload {
 	title := whPayload.Monitor.Name + " is " + status
 	description := whPayload.Heartbeat.Msg
 
-	return payload.NewPayload().AlertTitle(title).AlertBody(description)
+	return payload.NewPayload().AlertTitle(title).AlertBody(description).Sound("default")
 }
