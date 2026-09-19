@@ -26,6 +26,10 @@ func Setup(app *fiber.App) {
 	})
 
 	app.Use(func(c fiber.Ctx) error {
+		if c.Path() == "/health" {
+			return c.Next()
+		}
+
 		start := time.Now()
 		err := c.Next()
 		slog.Info("Request",

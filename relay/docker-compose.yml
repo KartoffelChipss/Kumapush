@@ -1,0 +1,48 @@
+# Full stack: relay + PostgreSQL. For local development against a `go run`
+# relay, use docker-compose-deps.yml (database only) instead.
+#
+#   cp .env.example .env   # then fill it in
+#   docker compose up -d --build
+services:
+  relay:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${RELAY_PORT:-4321}:4321"
+    env_file: .env
+    environment:
+      PORT: "4321"
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_USER: kumapush
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      DATABASE_NAME: kumapush
+      APNS_AUTH_KEY_PATH: /run/secrets/apns_auth_key
+    secrets:
+      - apns_auth_key
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kumapush
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: kumapush
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kumapush -d kumapush"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+secrets:
+  apns_auth_key:
+    # The container runs as a non-root user (uid 65532), so this file must be readable by it, e.g. chmod 644.
+    file: ${APNS_AUTH_KEY_FILE:-./authkey.p8}
+
+volumes:
+  postgres_data:

@@ -1,0 +1,10 @@
+.git
+.idea
+.task
+.env
+.env.*
+!.env.example
+*.p8
+bruno
+Dockerfile
+docker-compose*.yml

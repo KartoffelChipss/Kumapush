@@ -17,6 +17,10 @@ import (
 const maxBodyBytes = 64 * 1024
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
+		os.Exit(runHealthcheck())
+	}
+
 	ctx := context.Background()
 
 	database, err := db.New(ctx)
@@ -56,6 +60,8 @@ func main() {
 
 	app := fiber.New(fiberCfg)
 	appconfig.Setup(app)
+
+	handler.NewHealthHandler(database.Pool()).RegisterRoutes(app)
 
 	deviceRepository, err := repository.NewDeviceRepository(database.Pool())
 	if err != nil {
