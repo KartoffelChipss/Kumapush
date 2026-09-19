@@ -19,7 +19,7 @@ protocol RelayClient: AnyObject {
 }
 
 final class HTTPRelayClient: RelayClient {
-    static let defaultRelayURL = URL(string: "https://kumapush.com")!
+    static let defaultRelayURL = URL(string: "https://relay.kumapush.com")!
 
     var baseURL: URL
     private let session: URLSession
