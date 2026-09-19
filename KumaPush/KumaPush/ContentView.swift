@@ -42,6 +42,7 @@ struct ContentView: View {
     }
 }
 
+#if DEBUG
 #Preview("Needs registration") {
     ContentView(viewModel: AppViewModel(
         relay: PreviewRelayClient(),
@@ -61,3 +62,4 @@ struct ContentView: View {
             await viewModel.getStartedTapped()
         }
 }
+#endif
