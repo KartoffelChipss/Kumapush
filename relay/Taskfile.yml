@@ -15,7 +15,7 @@ tasks:
       DATABASE_PORT: 5432
     dotenv: ['.env']
     cmds:
-      - go run main.go
+      - go run .
 
   install-backend:
     internal: true
