@@ -5,7 +5,9 @@ struct GetStartedView: View {
     @Binding var customAddress: String
     let isRegistering: Bool
     let errorMessage: String?
+    @Binding var insecureRelayURL: URL?
     let onGetStarted: () -> Void
+    let onContinueInsecure: () -> Void
 
     var body: some View {
         VStack(spacing: 28) {
@@ -65,6 +67,15 @@ struct GetStartedView: View {
                         .foregroundStyle(.red)
                 }
             }
+        }
+        .alert(
+            "Use an insecure connection?",
+            isPresented: Binding(get: { insecureRelayURL != nil }, set: { if !$0 { insecureRelayURL = nil } })
+        ) {
+            Button("Cancel", role: .cancel) {}
+            Button("Continue", role: .destructive, action: onContinueInsecure)
+        } message: {
+            Text("\(insecureRelayURL?.absoluteString ?? "This relay") doesn't use HTTPS. Anything sent to it, including your device token, can be read by others on the network.")
         }
     }
 }

@@ -21,6 +21,7 @@ final class AppViewModel: ObservableObject {
 
     @Published var relayOption: RelayOption = .defaultRelay
     @Published var customRelayAddress: String = ""
+    @Published var pendingInsecureRelayURL: URL?
 
     var currentRelayURL: URL { relay.baseURL }
 
@@ -55,11 +56,16 @@ final class AppViewModel: ObservableObject {
         }
     }
 
-    func getStartedTapped() async {
+    func getStartedTapped(allowInsecure: Bool = false) async {
         errorMessage = nil
 
         guard let relayURL = resolvedRelayURL() else {
             errorMessage = "Enter a valid relay address"
+            return
+        }
+
+        if relayURL.scheme?.lowercased() == "http", !allowInsecure {
+            pendingInsecureRelayURL = relayURL
             return
         }
 

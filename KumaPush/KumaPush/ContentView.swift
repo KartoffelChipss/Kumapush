@@ -16,7 +16,9 @@ struct ContentView: View {
                         customAddress: $viewModel.customRelayAddress,
                         isRegistering: viewModel.isRegistering,
                         errorMessage: viewModel.errorMessage,
-                        onGetStarted: { Task { await viewModel.getStartedTapped() } }
+                        insecureRelayURL: $viewModel.pendingInsecureRelayURL,
+                        onGetStarted: { Task { await viewModel.getStartedTapped() } },
+                        onContinueInsecure: { Task { await viewModel.getStartedTapped(allowInsecure: true) } }
                     )
                 case .registered(let device):
                     RegisteredView(
