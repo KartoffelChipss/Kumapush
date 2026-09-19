@@ -5,19 +5,19 @@ import Foundation
 
 final class PreviewRelayClient: RelayClient {
     var baseURL = HTTPRelayClient.defaultRelayURL
-    func registerDevice(token: String) async throws -> Device {
-        Device(id: "preview-device-id", deviceToken: token, lastSuccessfulNotification: "", dateAdded: "")
+    func registerDevice(token: String) async throws -> DeviceRegistration {
+        DeviceRegistration(
+            device: Device(id: "preview-device-id", deviceToken: token, lastSuccessfulNotification: "", dateAdded: ""),
+            authToken: "preview-auth-token"
+        )
     }
-    func getDevice(byToken token: String) async throws -> Device {
+    func getDevice(byId id: String, authToken: String) async throws -> Device {
         throw RelayError.notFound
     }
-    func getDevice(byId id: String) async throws -> Device {
-        throw RelayError.notFound
-    }
-    func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device {
+    func updateDevice(id: String, authToken: String, downNotificationLevel: NotificationLevel) async throws -> Device {
         Device(id: id, deviceToken: "preview-token", lastSuccessfulNotification: "", dateAdded: "", downNotificationLevel: downNotificationLevel)
     }
-    func unregisterDevice(id: String) async throws {}
+    func unregisterDevice(id: String, authToken: String) async throws {}
 }
 
 final class PreviewPushRegistrar: PushRegistrar {
@@ -26,6 +26,7 @@ final class PreviewPushRegistrar: PushRegistrar {
 
 final class PreviewDeviceStore: DeviceStore {
     var deviceId: String?
+    var authToken: String?
     var relayBaseURL: URL?
 }
 #endif

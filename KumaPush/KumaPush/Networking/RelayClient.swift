@@ -1,6 +1,7 @@
 import Foundation
 
 enum RelayError: Error {
+    case unauthorized
     case notFound
     case conflict
     case server(String)
@@ -10,11 +11,10 @@ enum RelayError: Error {
 
 protocol RelayClient: AnyObject {
     var baseURL: URL { get set }
-    func registerDevice(token: String) async throws -> Device
-    func getDevice(byToken token: String) async throws -> Device
-    func getDevice(byId id: String) async throws -> Device
-    func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device
-    func unregisterDevice(id: String) async throws
+    func registerDevice(token: String) async throws -> DeviceRegistration
+    func getDevice(byId id: String, authToken: String) async throws -> Device
+    func updateDevice(id: String, authToken: String, downNotificationLevel: NotificationLevel) async throws -> Device
+    func unregisterDevice(id: String, authToken: String) async throws
 }
 
 final class HTTPRelayClient: RelayClient {
@@ -28,7 +28,7 @@ final class HTTPRelayClient: RelayClient {
         self.session = session
     }
 
-    func registerDevice(token: String) async throws -> Device {
+    func registerDevice(token: String) async throws -> DeviceRegistration {
         var request = URLRequest(url: baseURL.appendingPathComponent("devices"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -36,32 +36,32 @@ final class HTTPRelayClient: RelayClient {
         return try await send(request)
     }
 
-    func getDevice(byToken token: String) async throws -> Device {
-        try await send(URLRequest(url: baseURL.appendingPathComponent("devices/token/\(token)")))
+    func getDevice(byId id: String, authToken: String) async throws -> Device {
+        try await send(authorizedRequest(path: "devices/\(id)", method: "GET", authToken: authToken))
     }
 
-    func getDevice(byId id: String) async throws -> Device {
-        try await send(URLRequest(url: baseURL.appendingPathComponent("devices/\(id)")))
-    }
-
-    func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device {
-        var request = URLRequest(url: baseURL.appendingPathComponent("devices/\(id)"))
-        request.httpMethod = "PATCH"
+    func updateDevice(id: String, authToken: String, downNotificationLevel: NotificationLevel) async throws -> Device {
+        var request = authorizedRequest(path: "devices/\(id)", method: "PATCH", authToken: authToken)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(["down_notification_level": downNotificationLevel.rawValue])
         return try await send(request)
     }
 
-    func unregisterDevice(id: String) async throws {
-        var request = URLRequest(url: baseURL.appendingPathComponent("devices/\(id)"))
-        request.httpMethod = "DELETE"
-        _ = try await perform(request)
+    func unregisterDevice(id: String, authToken: String) async throws {
+        _ = try await perform(authorizedRequest(path: "devices/\(id)", method: "DELETE", authToken: authToken))
     }
 
-    private func send(_ request: URLRequest) async throws -> Device {
+    private func authorizedRequest(path: String, method: String, authToken: String) -> URLRequest {
+        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        request.httpMethod = method
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+
+    private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         let (data, _) = try await perform(request)
         do {
-            return try JSONDecoder().decode(Device.self, from: data)
+            return try JSONDecoder().decode(T.self, from: data)
         } catch {
             throw RelayError.decoding(error)
         }
@@ -83,6 +83,8 @@ final class HTTPRelayClient: RelayClient {
         switch http.statusCode {
         case 200, 201, 204:
             return (data, http)
+        case 401:
+            throw RelayError.unauthorized
         case 404:
             throw RelayError.notFound
         case 409:

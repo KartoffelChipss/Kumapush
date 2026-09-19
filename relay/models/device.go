@@ -23,6 +23,11 @@ type Device struct {
 	DownNotificationLevel      NotificationLevel `json:"down_notification_level"`
 }
 
+type DeviceRegistration struct {
+	Device
+	AuthToken string `json:"auth_token"`
+}
+
 type DeviceAddRequest struct {
 	DeviceToken string `json:"device_token"`
 }

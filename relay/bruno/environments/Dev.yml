@@ -3,3 +3,6 @@ variables:
   - name: base-url
     value: http://localhost:3000
     description: ""
+  - name: auth-token
+    value: ""
+    description: auth_token returned by Register Device

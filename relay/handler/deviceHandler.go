@@ -21,9 +21,9 @@ func NewDeviceHandler(repo *repository.DeviceRepository) *DeviceHandler {
 func (h *DeviceHandler) RegisterRoutes(router fiber.Router) {
 	router.Post("/devices", h.register)
 	router.Get("/devices/token/:token", h.getByDeviceToken)
-	router.Get("/devices/:id", h.getById)
-	router.Patch("/devices/:id", h.update)
-	router.Delete("/devices/:id", h.delete)
+	router.Get("/devices/:id", requireDeviceAuth(h.repo), h.getById)
+	router.Patch("/devices/:id", requireDeviceAuth(h.repo), h.update)
+	router.Delete("/devices/:id", requireDeviceAuth(h.repo), h.delete)
 }
 
 func (h *DeviceHandler) register(c fiber.Ctx) error {
@@ -36,15 +36,21 @@ func (h *DeviceHandler) register(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid device token"})
 	}
 
-	device, err := h.repo.Create(c.Context(), req.DeviceToken)
+	authToken, authTokenHash, err := service.GenerateAuthToken()
 	if err != nil {
-		if errors.Is(err, repository.ErrDeviceTokenExists) {
-			return c.Status(fiber.StatusConflict).JSON(models.APIError{Error: "device token already registered"})
-		}
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIError{Error: "unable to register device"})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(device)
+	device, created, err := h.repo.Register(c.Context(), req.DeviceToken, authTokenHash)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(models.APIError{Error: "unable to register device"})
+	}
+
+	status := fiber.StatusOK
+	if created {
+		status = fiber.StatusCreated
+	}
+	return c.Status(status).JSON(models.DeviceRegistration{Device: *device, AuthToken: authToken})
 }
 
 func (h *DeviceHandler) update(c fiber.Ctx) error {

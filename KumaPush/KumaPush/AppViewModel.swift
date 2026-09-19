@@ -41,18 +41,17 @@ final class AppViewModel: ObservableObject {
             applyToForm(relayURL: storedURL)
         }
 
-        guard let id = store.deviceId, let url = store.relayBaseURL else {
-            state = .needsRegistration
+        guard let id = store.deviceId, let authToken = store.authToken, let url = store.relayBaseURL else {
+            clearRegistration()
             return
         }
 
         relay.baseURL = url
         do {
-            let device = try await relay.getDevice(byId: id)
+            let device = try await relay.getDevice(byId: id, authToken: authToken)
             state = .registered(device)
         } catch {
-            store.deviceId = nil
-            state = .needsRegistration
+            clearRegistration()
         }
     }
 
@@ -70,10 +69,11 @@ final class AppViewModel: ObservableObject {
         relay.baseURL = relayURL
         do {
             let token = try await pushRegistrar.requestAuthorizationAndRegister()
-            let device = try await register(token: token)
-            store.deviceId = device.id
+            let registration = try await relay.registerDevice(token: token)
+            store.deviceId = registration.device.id
+            store.authToken = registration.authToken
             store.relayBaseURL = relayURL
-            state = .registered(device)
+            state = .registered(registration.device)
         } catch PushError.permissionDenied {
             errorMessage = "Notification permission was denied"
         } catch {
@@ -83,10 +83,14 @@ final class AppViewModel: ObservableObject {
 
     func downNotificationLevelChanged(to level: NotificationLevel) async {
         guard case .registered(let device) = state, device.downNotificationLevel != level else { return }
+        guard let authToken = store.authToken else {
+            errorMessage = "Could not update setting: \(Self.describe(RelayError.unauthorized))"
+            return
+        }
 
         errorMessage = nil
         do {
-            state = .registered(try await relay.updateDevice(id: device.id, downNotificationLevel: level))
+            state = .registered(try await relay.updateDevice(id: device.id, authToken: authToken, downNotificationLevel: level))
         } catch {
             errorMessage = "Could not update setting: \(Self.describe(error))"
         }
@@ -100,26 +104,20 @@ final class AppViewModel: ObservableObject {
         defer { isUnregistering = false }
 
         do {
-            try await relay.unregisterDevice(id: device.id)
-            store.deviceId = nil
-            state = .needsRegistration
-        } catch RelayError.notFound {
-            // Already gone on the relay; treat as success locally.
-            store.deviceId = nil
-            state = .needsRegistration
+            try await relay.unregisterDevice(id: device.id, authToken: store.authToken ?? "")
+            clearRegistration()
+        } catch RelayError.notFound, RelayError.unauthorized {
+            // local state is stale.
+            clearRegistration()
         } catch {
             errorMessage = "Could not unregister: \(Self.describe(error))"
         }
     }
 
-    /// Registers the token, transparently reusing the existing device if the
-    /// relay already knows this token (e.g. reinstall on the same device).
-    private func register(token: String) async throws -> Device {
-        do {
-            return try await relay.registerDevice(token: token)
-        } catch RelayError.conflict {
-            return try await relay.getDevice(byToken: token)
-        }
+    private func clearRegistration() {
+        store.deviceId = nil
+        store.authToken = nil
+        state = .needsRegistration
     }
 
     /// Resolves the address currently selected on the onboarding form into a URL,
@@ -156,6 +154,8 @@ final class AppViewModel: ObservableObject {
         switch error {
         case RelayError.server(let message):
             return message
+        case RelayError.unauthorized:
+            return "not authorized"
         case RelayError.notFound:
             return "device not found"
         case RelayError.conflict:

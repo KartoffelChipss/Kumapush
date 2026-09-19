@@ -25,6 +25,8 @@ func (d *DB) Migrate(ctx context.Context) error {
 
         ALTER TABLE devices ADD COLUMN IF NOT EXISTS down_notification_level TEXT NOT NULL DEFAULT 'normal';
 
+        ALTER TABLE devices ADD COLUMN IF NOT EXISTS auth_token_hash TEXT;
+
         CREATE UNIQUE INDEX IF NOT EXISTS devices_device_token_key ON devices (device_token);
     `)
 

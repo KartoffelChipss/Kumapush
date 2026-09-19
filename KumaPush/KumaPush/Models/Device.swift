@@ -61,6 +61,25 @@ struct Device: Codable, Equatable {
     }
 }
 
+struct DeviceRegistration: Decodable {
+    let device: Device
+    let authToken: String
+
+    private enum CodingKeys: String, CodingKey {
+        case authToken = "auth_token"
+    }
+
+    init(from decoder: Decoder) throws {
+        device = try Device(from: decoder)
+        authToken = try decoder.container(keyedBy: CodingKeys.self).decode(String.self, forKey: .authToken)
+    }
+
+    init(device: Device, authToken: String) {
+        self.device = device
+        self.authToken = authToken
+    }
+}
+
 struct RelayAPIError: Codable, Error {
     let error: String
 }

@@ -14,10 +14,7 @@ import (
 	"github.com/jaevor/go-nanoid"
 )
 
-var (
-	ErrDeviceNotFound    = errors.New("device not found")
-	ErrDeviceTokenExists = errors.New("device token already registered")
-)
+var ErrDeviceNotFound = errors.New("device not found")
 
 const (
 	uniqueViolationCode = "23505"
@@ -38,36 +35,34 @@ func NewDeviceRepository(pool *pgxpool.Pool) (*DeviceRepository, error) {
 	return &DeviceRepository{pool: pool, generateID: generateID}, nil
 }
 
-func (r *DeviceRepository) Create(ctx context.Context, deviceToken string) (*models.Device, error) {
+// Register creates the device, or, if the device token is already known,
+// replaces its auth token hash. created reports whether a new device was made.
+func (r *DeviceRepository) Register(ctx context.Context, deviceToken, authTokenHash string) (device *models.Device, created bool, err error) {
 	for attempt := 0; attempt < maxIDCollisionTries; attempt++ {
-		id := r.generateID()
-
-		var dateAdded time.Time
+		var (
+			id           string
+			downLevel    string
+			lastNotified *time.Time
+			dateAdded    time.Time
+		)
 		err := r.pool.QueryRow(ctx, `
-            INSERT INTO devices (id, device_token)
-            VALUES ($1, $2)
-            RETURNING date_added
-        `, id, deviceToken).Scan(&dateAdded)
+            INSERT INTO devices (id, device_token, auth_token_hash)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (device_token) DO UPDATE SET auth_token_hash = EXCLUDED.auth_token_hash
+            RETURNING id, last_successful_notification, date_added, down_notification_level, (xmax = 0)
+        `, r.generateID(), deviceToken, authTokenHash).Scan(&id, &lastNotified, &dateAdded, &downLevel, &created)
 		if err == nil {
-			return &models.Device{
-				Id:                    id,
-				DeviceToken:           deviceToken,
-				DateAdded:             dateAdded.Format(time.RFC3339),
-				DownNotificationLevel: models.NotificationLevelNormal,
-			}, nil
+			return newDevice(id, deviceToken, lastNotified, dateAdded, downLevel), created, nil
 		}
 
 		pgErr, ok := errors.AsType[*pgconn.PgError](err)
-		if !ok || pgErr.Code != uniqueViolationCode {
-			return nil, err
-		}
-		if pgErr.ConstraintName != "devices_pkey" {
-			return nil, ErrDeviceTokenExists
+		if !ok || pgErr.Code != uniqueViolationCode || pgErr.ConstraintName != "devices_pkey" {
+			return nil, false, err
 		}
 		// Extremely unlikely id collision: retry with a freshly generated id.
 	}
 
-	return nil, fmt.Errorf("failed to generate a unique device id after %d attempts", maxIDCollisionTries)
+	return nil, false, fmt.Errorf("failed to generate a unique device id after %d attempts", maxIDCollisionTries)
 }
 
 func (r *DeviceRepository) GetByDeviceToken(ctx context.Context, deviceToken string) (*models.Device, error) {
@@ -84,6 +79,22 @@ func (r *DeviceRepository) GetById(ctx context.Context, id string) (*models.Devi
         FROM devices
         WHERE id = $1
     `, id)
+}
+
+// GetAuthTokenHash returns the stored auth token hash
+func (r *DeviceRepository) GetAuthTokenHash(ctx context.Context, id string) (string, error) {
+	var hash *string
+	err := r.pool.QueryRow(ctx, `SELECT auth_token_hash FROM devices WHERE id = $1`, id).Scan(&hash)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrDeviceNotFound
+		}
+		return "", err
+	}
+	if hash == nil {
+		return "", nil
+	}
+	return *hash, nil
 }
 
 func (r *DeviceRepository) UpdateDownNotificationLevel(ctx context.Context, id string, level models.NotificationLevel) (*models.Device, error) {
@@ -131,6 +142,10 @@ func (r *DeviceRepository) scanOne(ctx context.Context, query string, args ...an
 		return nil, err
 	}
 
+	return newDevice(id, deviceToken, lastNotified, dateAdded, downLevel), nil
+}
+
+func newDevice(id, deviceToken string, lastNotified *time.Time, dateAdded time.Time, downLevel string) *models.Device {
 	device := &models.Device{
 		Id:                    id,
 		DeviceToken:           deviceToken,
@@ -140,5 +155,5 @@ func (r *DeviceRepository) scanOne(ctx context.Context, query string, args ...an
 	if lastNotified != nil {
 		device.LastSuccessfulNotification = lastNotified.Format(time.RFC3339)
 	}
-	return device, nil
+	return device
 }

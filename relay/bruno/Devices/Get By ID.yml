@@ -10,6 +10,9 @@ http:
     - name: id
       value: NyAAJ3yD4Q0dZC
       type: path
+  headers:
+    - name: Authorization
+      value: Bearer {{auth-token}}
   auth: inherit
 
 settings:
