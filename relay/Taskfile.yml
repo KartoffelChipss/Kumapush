@@ -34,3 +34,8 @@ tasks:
     desc: Stop PostgreSQL database
     cmds:
       - docker compose -f docker-compose-deps.yml down
+
+  db:migration:
+    desc: 'Create a new SQL migration, e.g. task db:migration -- add_devices_name'
+    cmds:
+      - go run github.com/pressly/goose/v3/cmd/goose@v3.28.0 -s -dir db/migrations create {{.CLI_ARGS}} sql

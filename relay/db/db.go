@@ -2,36 +2,51 @@ package db
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"kumapush-relay/env"
 	"log/slog"
 	"net/url"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
+	"github.com/pressly/goose/v3/lock"
 )
+
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
 
 type DB struct {
 	pool *pgxpool.Pool
 }
 
+// Migrate applies all pending migrations from db/migrations. Concurrent relay instances are
+// serialized with a Postgres advisory lock.
 func (d *DB) Migrate(ctx context.Context) error {
-	_, err := d.pool.Exec(ctx, `
-        CREATE TABLE IF NOT EXISTS devices (
-            id                           TEXT        PRIMARY KEY,
-            device_token                 TEXT        NOT NULL,
-            last_successful_notification TIMESTAMPTZ,
-            date_added                   TIMESTAMPTZ NOT NULL DEFAULT now()
-        );
+	sqlDB := stdlib.OpenDBFromPool(d.pool)
+	defer sqlDB.Close()
 
-        ALTER TABLE devices ADD COLUMN IF NOT EXISTS down_notification_level TEXT NOT NULL DEFAULT 'normal';
-
-        ALTER TABLE devices ADD COLUMN IF NOT EXISTS auth_token_hash TEXT;
-
-        CREATE UNIQUE INDEX IF NOT EXISTS devices_device_token_key ON devices (device_token);
-    `)
-
+	migrations, err := fs.Sub(migrationsFS, "migrations")
 	if err != nil {
 		return err
+	}
+	locker, err := lock.NewPostgresSessionLocker()
+	if err != nil {
+		return fmt.Errorf("unable to create migration locker: %w", err)
+	}
+	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, migrations, goose.WithSessionLocker(locker))
+	if err != nil {
+		return fmt.Errorf("unable to create migration provider: %w", err)
+	}
+
+	results, err := provider.Up(ctx)
+	if err != nil {
+		return err
+	}
+	for _, r := range results {
+		slog.Info("Applied migration", "migration", r.Source.Path, "duration", r.Duration.String())
 	}
 
 	slog.Info("Database migration completed successfully")
