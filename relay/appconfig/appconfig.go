@@ -31,7 +31,7 @@ func Setup(app *fiber.App) {
 		slog.Info("Request",
 			"status", c.Response().StatusCode(),
 			"method", c.Method(),
-			"path", c.Path(),
+			"route", c.Route().Path,
 			"latency", time.Since(start).String(),
 			"ip", c.IP(),
 		)

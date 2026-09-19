@@ -49,18 +49,18 @@ func (wh *WebhookHandler) handleWebhook(c fiber.Ctx) error {
 	}
 	if !res.Sent() {
 		if isDeviceTokenInvalid(res) {
-			slog.Info("Removing device with invalid APNs token", "deviceId", deviceId, "statusCode", res.StatusCode, "reason", res.Reason)
+			slog.Info("Removing device with invalid APNs token", "statusCode", res.StatusCode, "reason", res.Reason)
 			if err := wh.deviceRepo.DeleteById(c.Context(), deviceId); err != nil && !errors.Is(err, repository.ErrDeviceNotFound) {
-				slog.Error("Failed to remove device", "deviceId", deviceId, "error", err)
+				slog.Error("Failed to remove device", "error", err)
 			}
 			return c.Status(fiber.StatusGone).JSON(models.APIError{Error: "device is no longer registered"})
 		}
-		slog.Error("APNs rejected notification", "deviceId", deviceId, "statusCode", res.StatusCode, "reason", res.Reason)
+		slog.Error("APNs rejected notification", "statusCode", res.StatusCode, "reason", res.Reason)
 		return c.Status(fiber.StatusBadGateway).JSON(models.APIError{Error: "notification rejected by APNs"})
 	}
 
 	if err := wh.deviceRepo.MarkNotificationSent(c.Context(), deviceId); err != nil {
-		slog.Warn("Failed to record last successful notification", "deviceId", deviceId, "error", err)
+		slog.Warn("Failed to record last successful notification", "error", err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{})
