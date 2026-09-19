@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"kumapush-relay/service"
 	"log/slog"
 
@@ -8,6 +9,7 @@ import (
 	"kumapush-relay/repository"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/sideshow/apns2"
 )
 
 type WebhookHandler struct {
@@ -45,6 +47,13 @@ func (wh *WebhookHandler) handleWebhook(c fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(models.APIError{Error: "failed to send notification"})
 	}
 	if !res.Sent() {
+		if isDeviceTokenInvalid(res) {
+			slog.Info("Removing device with invalid APNs token", "deviceId", deviceId, "statusCode", res.StatusCode, "reason", res.Reason)
+			if err := wh.deviceRepo.DeleteById(c.Context(), deviceId); err != nil && !errors.Is(err, repository.ErrDeviceNotFound) {
+				slog.Error("Failed to remove device", "deviceId", deviceId, "error", err)
+			}
+			return c.Status(fiber.StatusGone).JSON(models.APIError{Error: "device is no longer registered"})
+		}
 		slog.Error("APNs rejected notification", "deviceId", deviceId, "statusCode", res.StatusCode, "reason", res.Reason)
 		return c.Status(fiber.StatusBadGateway).JSON(models.APIError{Error: "notification rejected by APNs"})
 	}
@@ -54,4 +63,9 @@ func (wh *WebhookHandler) handleWebhook(c fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{})
+}
+
+// isDeviceTokenInvalid reports whether APNs says the token will never work again
+func isDeviceTokenInvalid(res *apns2.Response) bool {
+	return res.Reason == apns2.ReasonUnregistered || res.Reason == apns2.ReasonBadDeviceToken
 }
