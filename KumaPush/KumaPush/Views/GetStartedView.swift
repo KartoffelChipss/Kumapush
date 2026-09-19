@@ -9,6 +9,9 @@ struct GetStartedView: View {
     let onGetStarted: () -> Void
     let onContinueInsecure: () -> Void
 
+    @State private var showingCustomRelay = false
+    @State private var customRelayAttempted = false
+
     var body: some View {
         VStack(spacing: 28) {
             VStack(spacing: 12) {
@@ -23,31 +26,11 @@ struct GetStartedView: View {
                     .multilineTextAlignment(.center)
             }
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text("RELAY SERVER")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-
-                Picker("Relay", selection: $relayOption) {
-                    Text("kumapush.com").tag(RelayOption.defaultRelay)
-                    Text("Custom").tag(RelayOption.custom)
-                }
-                .pickerStyle(.segmented)
-
-                if relayOption == .custom {
-                    TextField("http://localhost:3000", text: $customAddress)
-                        .padding(12)
-                        .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 10))
-                        .keyboardType(.URL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
-            }
-            .padding(16)
-            .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 16))
-
             VStack(spacing: 12) {
-                Button(action: onGetStarted) {
+                Button {
+                    relayOption = .defaultRelay
+                    onGetStarted()
+                } label: {
                     Group {
                         if isRegistering {
                             ProgressView()
@@ -61,13 +44,94 @@ struct GetStartedView: View {
                 .controlSize(.large)
                 .disabled(isRegistering)
 
-                if let errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                        .font(.footnote)
-                        .foregroundStyle(.red)
+                Button("Use custom relay") {
+                    customRelayAttempted = false
+                    showingCustomRelay = true
+                }
+                .font(.footnote)
+                .disabled(isRegistering)
+
+                if let errorMessage, !showingCustomRelay {
+                    ErrorLabel(message: errorMessage)
                 }
             }
         }
+        .padding(.top, 20)
+        .sheet(isPresented: $showingCustomRelay) {
+            CustomRelaySheet(
+                address: $customAddress,
+                isRegistering: isRegistering,
+                errorMessage: customRelayAttempted ? errorMessage : nil,
+                insecureRelayURL: $insecureRelayURL,
+                onConnect: {
+                    customRelayAttempted = true
+                    relayOption = .custom
+                    onGetStarted()
+                },
+                onContinueInsecure: onContinueInsecure
+            )
+        }
+    }
+}
+
+private struct CustomRelaySheet: View {
+    @Binding var address: String
+    let isRegistering: Bool
+    let errorMessage: String?
+    @Binding var insecureRelayURL: URL?
+    let onConnect: () -> Void
+    let onContinueInsecure: () -> Void
+
+    @FocusState private var addressFocused: Bool
+
+    private var canConnect: Bool {
+        !isRegistering && !address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Custom Relay")
+                    .font(.title3.bold())
+                Text("Enter the address of the relay server you host yourself.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            TextField("https://relay.example.com", text: $address)
+                .padding(12)
+                .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 10))
+                .keyboardType(.URL)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.go)
+                .focused($addressFocused)
+                .onSubmit { if canConnect { onConnect() } }
+
+            Button(action: onConnect) {
+                Group {
+                    if isRegistering {
+                        ProgressView()
+                    } else {
+                        Text("Continue")
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!canConnect)
+
+            if let errorMessage {
+                ErrorLabel(message: errorMessage)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(24)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+        .onAppear { addressFocused = true }
         .alert(
             "Use an insecure connection?",
             isPresented: Binding(get: { insecureRelayURL != nil }, set: { if !$0 { insecureRelayURL = nil } })
@@ -77,5 +141,15 @@ struct GetStartedView: View {
         } message: {
             Text("\(insecureRelayURL?.absoluteString ?? "This relay") doesn't use HTTPS. Anything sent to it, including your device token, can be read by others on the network.")
         }
+    }
+}
+
+private struct ErrorLabel: View {
+    let message: String
+
+    var body: some View {
+        Label(message, systemImage: "exclamationmark.triangle.fill")
+            .font(.footnote)
+            .foregroundStyle(.red)
     }
 }
