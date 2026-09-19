@@ -49,5 +49,9 @@ func (wh *WebhookHandler) handleWebhook(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadGateway).JSON(models.APIError{Error: "notification rejected by APNs"})
 	}
 
+	if err := wh.deviceRepo.MarkNotificationSent(c.Context(), deviceId); err != nil {
+		slog.Warn("Failed to record last successful notification", "deviceId", deviceId, "error", err)
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{})
 }

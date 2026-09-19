@@ -104,6 +104,15 @@ func (r *DeviceRepository) UpdateDownNotificationLevel(ctx context.Context, id s
 	return r.GetById(ctx, id)
 }
 
+func (r *DeviceRepository) MarkNotificationSent(ctx context.Context, id string) error {
+	_, err := r.pool.Exec(ctx, `
+        UPDATE devices
+        SET last_successful_notification = now()
+        WHERE id = $1
+    `, id)
+	return err
+}
+
 func (r *DeviceRepository) DeleteById(ctx context.Context, id string) error {
 	result, err := r.pool.Exec(ctx, `
         DELETE FROM devices
