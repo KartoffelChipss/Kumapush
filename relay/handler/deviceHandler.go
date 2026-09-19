@@ -58,11 +58,17 @@ func (h *DeviceHandler) update(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid request body"})
 	}
 
-	if !req.DownNotificationLevel.IsValid() {
+	if req.DeviceToken == nil && req.DownNotificationLevel == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "nothing to update"})
+	}
+	if req.DeviceToken != nil && !service.IsValidAppleDeviceToken(*req.DeviceToken) {
+		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid device token"})
+	}
+	if req.DownNotificationLevel != nil && !req.DownNotificationLevel.IsValid() {
 		return c.Status(fiber.StatusBadRequest).JSON(models.APIError{Error: "invalid down_notification_level"})
 	}
 
-	device, err := h.repo.UpdateDownNotificationLevel(c.Context(), c.Params("id"), req.DownNotificationLevel)
+	device, err := h.repo.Update(c.Context(), c.Params("id"), req.DeviceToken, req.DownNotificationLevel)
 	if err != nil {
 		return respondDeviceError(c, err)
 	}
@@ -87,6 +93,9 @@ func (h *DeviceHandler) delete(c fiber.Ctx) error {
 func respondDeviceError(c fiber.Ctx, err error) error {
 	if errors.Is(err, repository.ErrDeviceNotFound) {
 		return c.Status(fiber.StatusNotFound).JSON(models.APIError{Error: "device not found"})
+	}
+	if errors.Is(err, repository.ErrDeviceTokenExists) {
+		return c.Status(fiber.StatusConflict).JSON(models.APIError{Error: "device token already registered"})
 	}
 	return c.Status(fiber.StatusInternalServerError).JSON(models.APIError{Error: "unable to process device request"})
 }

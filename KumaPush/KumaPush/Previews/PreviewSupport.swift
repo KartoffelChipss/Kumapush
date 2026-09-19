@@ -17,6 +17,9 @@ final class PreviewRelayClient: RelayClient {
     func updateDevice(id: String, authToken: String, downNotificationLevel: NotificationLevel) async throws -> Device {
         Device(id: id, deviceToken: "preview-token", lastSuccessfulNotification: "", dateAdded: "", downNotificationLevel: downNotificationLevel)
     }
+    func updateDevice(id: String, authToken: String, deviceToken: String) async throws -> Device {
+        Device(id: id, deviceToken: deviceToken, lastSuccessfulNotification: "", dateAdded: "")
+    }
     func unregisterDevice(id: String, authToken: String) async throws {}
 }
 

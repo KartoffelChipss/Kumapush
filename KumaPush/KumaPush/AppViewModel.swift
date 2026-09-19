@@ -51,9 +51,19 @@ final class AppViewModel: ObservableObject {
         do {
             let device = try await relay.getDevice(byId: id, authToken: authToken)
             state = .registered(device)
+            await syncDeviceToken(of: device, authToken: authToken)
         } catch {
             clearRegistration()
         }
+    }
+
+    /// APNs can hand out a new token (restore, reinstall, OS update). If it differs from what the relay has, push the new one
+    private func syncDeviceToken(of device: Device, authToken: String) async {
+        guard let currentToken = try? await pushRegistrar.requestAuthorizationAndRegister(),
+              currentToken != device.deviceToken,
+              let updated = try? await relay.updateDevice(id: device.id, authToken: authToken, deviceToken: currentToken)
+        else { return }
+        state = .registered(updated)
     }
 
     func getStartedTapped(allowInsecure: Bool = false) async {

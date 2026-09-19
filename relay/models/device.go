@@ -33,5 +33,6 @@ type DeviceAddRequest struct {
 }
 
 type DeviceUpdateRequest struct {
-	DownNotificationLevel NotificationLevel `json:"down_notification_level"`
+	DeviceToken           *string            `json:"device_token"`
+	DownNotificationLevel *NotificationLevel `json:"down_notification_level"`
 }

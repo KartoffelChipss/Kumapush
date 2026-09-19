@@ -14,7 +14,10 @@ import (
 	"github.com/jaevor/go-nanoid"
 )
 
-var ErrDeviceNotFound = errors.New("device not found")
+var (
+	ErrDeviceNotFound    = errors.New("device not found")
+	ErrDeviceTokenExists = errors.New("device token already registered")
+)
 
 const (
 	uniqueViolationCode = "23505"
@@ -89,13 +92,24 @@ func (r *DeviceRepository) GetAuthTokenHash(ctx context.Context, id string) (str
 	return *hash, nil
 }
 
-func (r *DeviceRepository) UpdateDownNotificationLevel(ctx context.Context, id string, level models.NotificationLevel) (*models.Device, error) {
+// Update applies the non-nil fields to the device.
+func (r *DeviceRepository) Update(ctx context.Context, id string, deviceToken *string, level *models.NotificationLevel) (*models.Device, error) {
+	var levelValue *string
+	if level != nil {
+		v := string(*level)
+		levelValue = &v
+	}
+
 	result, err := r.pool.Exec(ctx, `
         UPDATE devices
-        SET down_notification_level = $2
+        SET device_token            = COALESCE($2, device_token),
+            down_notification_level = COALESCE($3, down_notification_level)
         WHERE id = $1
-    `, id, string(level))
+    `, id, deviceToken, levelValue)
 	if err != nil {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok && pgErr.Code == uniqueViolationCode {
+			return nil, ErrDeviceTokenExists
+		}
 		return nil, err
 	}
 	if result.RowsAffected() == 0 {

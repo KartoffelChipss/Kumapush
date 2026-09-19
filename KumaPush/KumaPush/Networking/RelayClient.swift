@@ -14,6 +14,7 @@ protocol RelayClient: AnyObject {
     func registerDevice(token: String) async throws -> DeviceRegistration
     func getDevice(byId id: String, authToken: String) async throws -> Device
     func updateDevice(id: String, authToken: String, downNotificationLevel: NotificationLevel) async throws -> Device
+    func updateDevice(id: String, authToken: String, deviceToken: String) async throws -> Device
     func unregisterDevice(id: String, authToken: String) async throws
 }
 
@@ -41,9 +42,17 @@ final class HTTPRelayClient: RelayClient {
     }
 
     func updateDevice(id: String, authToken: String, downNotificationLevel: NotificationLevel) async throws -> Device {
+        try await patchDevice(id: id, authToken: authToken, fields: ["down_notification_level": downNotificationLevel.rawValue])
+    }
+
+    func updateDevice(id: String, authToken: String, deviceToken: String) async throws -> Device {
+        try await patchDevice(id: id, authToken: authToken, fields: ["device_token": deviceToken])
+    }
+
+    private func patchDevice(id: String, authToken: String, fields: [String: String]) async throws -> Device {
         var request = authorizedRequest(path: "devices/\(id)", method: "PATCH", authToken: authToken)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["down_notification_level": downNotificationLevel.rawValue])
+        request.httpBody = try JSONEncoder().encode(fields)
         return try await send(request)
     }
 
