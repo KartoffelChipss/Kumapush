@@ -19,7 +19,8 @@ func NewDeviceHandler(repo *repository.DeviceRepository) *DeviceHandler {
 }
 
 func (h *DeviceHandler) RegisterRoutes(router fiber.Router) {
-	router.Post("/devices", h.register)
+	register := registerRateLimiters()
+	router.Post("/devices", register[0], register[1], h.register)
 	router.Get("/devices/:id", requireDeviceAuth(h.repo), h.getById)
 	router.Patch("/devices/:id", requireDeviceAuth(h.repo), h.update)
 	router.Delete("/devices/:id", requireDeviceAuth(h.repo), h.delete)

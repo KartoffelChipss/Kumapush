@@ -22,7 +22,8 @@ func NewWebhookHandler(deviceRepo *repository.DeviceRepository, notificationServ
 }
 
 func (wh *WebhookHandler) RegisterRoutes(router fiber.Router) {
-	router.Post("/wh/:deviceId", wh.handleWebhook)
+	limits := webhookRateLimiters()
+	router.Post("/wh/:deviceId", limits[0], limits[1], wh.handleWebhook)
 }
 
 func (wh *WebhookHandler) handleWebhook(c fiber.Ctx) error {
