@@ -100,7 +100,7 @@ final class AppViewModel: ObservableObject {
         defer { isUnregistering = false }
 
         do {
-            try await relay.unregisterDevice(token: device.deviceToken)
+            try await relay.unregisterDevice(id: device.id)
             store.deviceId = nil
             state = .needsRegistration
         } catch RelayError.notFound {

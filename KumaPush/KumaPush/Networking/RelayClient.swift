@@ -14,7 +14,7 @@ protocol RelayClient: AnyObject {
     func getDevice(byToken token: String) async throws -> Device
     func getDevice(byId id: String) async throws -> Device
     func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device
-    func unregisterDevice(token: String) async throws
+    func unregisterDevice(id: String) async throws
 }
 
 final class HTTPRelayClient: RelayClient {
@@ -52,8 +52,8 @@ final class HTTPRelayClient: RelayClient {
         return try await send(request)
     }
 
-    func unregisterDevice(token: String) async throws {
-        var request = URLRequest(url: baseURL.appendingPathComponent("devices/token/\(token)"))
+    func unregisterDevice(id: String) async throws {
+        var request = URLRequest(url: baseURL.appendingPathComponent("devices/\(id)"))
         request.httpMethod = "DELETE"
         _ = try await perform(request)
     }

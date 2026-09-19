@@ -1,0 +1,19 @@
+info:
+  name: Delete Device
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{base-url}}/devices/:id"
+  params:
+    - name: id
+      value: NyAAJ3yD4Q0dZC
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

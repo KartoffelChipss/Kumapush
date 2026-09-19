@@ -23,7 +23,7 @@ func (h *DeviceHandler) RegisterRoutes(router fiber.Router) {
 	router.Get("/devices/token/:token", h.getByDeviceToken)
 	router.Get("/devices/:id", h.getById)
 	router.Patch("/devices/:id", h.update)
-	router.Delete("/devices/token/:token", h.deleteByDeviceToken)
+	router.Delete("/devices/:id", h.delete)
 }
 
 func (h *DeviceHandler) register(c fiber.Ctx) error {
@@ -80,8 +80,8 @@ func (h *DeviceHandler) getById(c fiber.Ctx) error {
 	return c.JSON(device)
 }
 
-func (h *DeviceHandler) deleteByDeviceToken(c fiber.Ctx) error {
-	if err := h.repo.DeleteByDeviceToken(c.Context(), c.Params("token")); err != nil {
+func (h *DeviceHandler) delete(c fiber.Ctx) error {
+	if err := h.repo.DeleteById(c.Context(), c.Params("id")); err != nil {
 		return respondDeviceError(c, err)
 	}
 	return c.SendStatus(fiber.StatusNoContent)

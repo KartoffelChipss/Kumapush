@@ -17,7 +17,7 @@ final class PreviewRelayClient: RelayClient {
     func updateDevice(id: String, downNotificationLevel: NotificationLevel) async throws -> Device {
         Device(id: id, deviceToken: "preview-token", lastSuccessfulNotification: "", dateAdded: "", downNotificationLevel: downNotificationLevel)
     }
-    func unregisterDevice(token: String) async throws {}
+    func unregisterDevice(id: String) async throws {}
 }
 
 final class PreviewPushRegistrar: PushRegistrar {

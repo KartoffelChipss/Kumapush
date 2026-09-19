@@ -101,11 +101,11 @@ func (r *DeviceRepository) UpdateDownNotificationLevel(ctx context.Context, id s
 	return r.GetById(ctx, id)
 }
 
-func (r *DeviceRepository) DeleteByDeviceToken(ctx context.Context, deviceToken string) error {
+func (r *DeviceRepository) DeleteById(ctx context.Context, id string) error {
 	result, err := r.pool.Exec(ctx, `
         DELETE FROM devices
-        WHERE device_token = $1
-    `, deviceToken)
+        WHERE id = $1
+    `, id)
 	if err != nil {
 		return err
 	}
