@@ -14,6 +14,8 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
+const maxBodyBytes = 64 * 1024
+
 func main() {
 	ctx := context.Background()
 
@@ -35,7 +37,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	fiberCfg := fiber.Config{}
+	fiberCfg := fiber.Config{
+		BodyLimit:    maxBodyBytes,
+		ErrorHandler: appconfig.ErrorHandler,
+	}
 	if env.BehindProxy() {
 		fiberCfg.ProxyHeader = env.ProxyHeader()
 		fiberCfg.TrustProxy = true

@@ -8,7 +8,7 @@ http:
   url: "{{base-url}}/wh/:deviceId"
   params:
     - name: deviceId
-      value: KfI-VXnua6d58Z
+      value: Twhi3XfeCQKklF
       type: path
   body:
     type: json
