@@ -8,6 +8,9 @@ order: 2
 
 KumaPush is built to know as little about you as possible. There are no accounts, no email addresses and no analytics in the app or the relay.
 
+> [!NOTE]
+> This page is a technical overview. The legally binding terms for the official relay are in the [Privacy Policy](/privacy) and the [Terms of Service](/terms).
+
 ## What the relay stores
 
 For each registered device the relay keeps one row:

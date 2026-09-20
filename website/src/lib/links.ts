@@ -3,6 +3,8 @@ const REPO = 'https://github.com/KartoffelChipss/Kumapush';
 export const LINKS = {
     home: '/',
     docs: '/docs',
+    privacy: '/privacy',
+    terms: '/terms',
     github: REPO,
     releases: `${REPO}/releases`,
     issues: `${REPO}/issues`,

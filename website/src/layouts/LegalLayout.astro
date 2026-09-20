@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import BaseLayout from './BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/docs.css';
+
+interface Props {
+    entry: CollectionEntry<'legal'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<BaseLayout title={`${entry.data.title} — KumaPush`} description={entry.data.description}>
+    <Navbar />
+
+    <div class="legal-shell">
+        <main class="docs-content">
+            <h1>{entry.data.title}</h1>
+            {entry.data.description && <p class="docs-lead">{entry.data.description}</p>}
+
+            <div class="docs-prose">
+                <slot />
+            </div>
+        </main>
+    </div>
+
+    <Footer />
+</BaseLayout>

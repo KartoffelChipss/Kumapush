@@ -13,4 +13,12 @@ const docs = defineCollection({
     }),
 });
 
-export const collections = { docs };
+const legal = defineCollection({
+    loader: glob({ base: './src/content/legal', pattern: '**/*.md' }),
+    schema: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+    }),
+});
+
+export const collections = { docs, legal };
