@@ -84,6 +84,7 @@ private struct CustomRelaySheet: View {
     let onContinueInsecure: () -> Void
 
     @FocusState private var addressFocused: Bool
+    @State private var showingInsecureAlert = false
 
     private var canConnect: Bool {
         !isRegistering && !address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -134,12 +135,15 @@ private struct CustomRelaySheet: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
         .onAppear { addressFocused = true }
-        .alert(
-            "Use an insecure connection?",
-            isPresented: Binding(get: { insecureRelayURL != nil }, set: { if !$0 { insecureRelayURL = nil } })
-        ) {
-            Button("Cancel", role: .cancel) {}
-            Button("Continue", role: .destructive, action: onContinueInsecure)
+        .onChange(of: insecureRelayURL) { _, url in
+            showingInsecureAlert = url != nil
+        }
+        .alert("Use an insecure connection?", isPresented: $showingInsecureAlert) {
+            Button("Cancel", role: .cancel) { insecureRelayURL = nil }
+            Button("Continue", role: .destructive) {
+                insecureRelayURL = nil
+                onContinueInsecure()
+            }
         } message: {
             Text("\(insecureRelayURL?.absoluteString ?? "This relay") doesn't use HTTPS. Anything sent to it, including your device token, can be read by others on the network.")
         }
