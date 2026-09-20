@@ -1,0 +1,88 @@
+---
+import { Activity, Server, Cloud, Smartphone, ShieldQuestion } from '@lucide/astro';
+import { LINKS } from '../lib/links';
+
+const nodes = [
+    { icon: Activity, title: 'Uptime Kuma', text: 'A monitor changes state and fires a webhook.' },
+    { icon: Server, title: 'KumaPush relay', text: 'Finds your device and builds the notification.', relay: true },
+    { icon: Cloud, title: 'Apple Push service', text: 'APNs is Apple’s delivery network for push.' },
+    { icon: Smartphone, title: 'Your iPhone', text: 'iOS shows the alert, even with the app closed.' },
+];
+const links = [
+    'POST <span class="nb">/wh/‹device-id›</span>',
+    'HTTP/2 push signed with the relay’s key',
+    'Delivered to your device token',
+];
+---
+
+<section class="section alt" id="how-it-works">
+    <div class="wrap">
+        <div class="sh">
+            <div class="eyebrow">How it works</div>
+            <h2>A relay between Uptime Kuma and Apple</h2>
+            <p class="lead">
+                iPhones can only be pushed to through Apple's Push Notification service (APNs). The relay is the small
+                piece that sits in the middle and speaks both languages.
+            </p>
+        </div>
+
+        <div class="flow">
+            {nodes.map((node, i) => (
+                <>
+                    <div class:list={['node', { relay: node.relay }]}>
+                        <div class="node-ico"><node.icon size={20} /></div>
+                        <h3>{node.title}</h3>
+                        <p>{node.text}</p>
+                    </div>
+                    {i < links.length && (
+                        <div class="flow-link">
+                            <div class="flow-line"></div>
+                            <code set:html={links[i]} />
+                        </div>
+                    )}
+                </>
+            ))}
+        </div>
+
+        <div class="how-grid">
+            <div class="how-step">
+                <div class="step-num">1</div>
+                <h3>Register once</h3>
+                <p>
+                    The app asks iOS for a device token and sends it to the relay. You get back a short device ID and a
+                    private auth token that only your phone keeps. The ID becomes your personal webhook URL.
+                </p>
+            </div>
+            <div class="how-step">
+                <div class="step-num">2</div>
+                <h3>Uptime Kuma calls the webhook</h3>
+                <p>
+                    When a monitor goes up or down, Uptime Kuma sends a normal webhook to
+                    <code>/wh/‹device-id›</code> on the relay. Nothing to install on your Kuma server.
+                </p>
+            </div>
+            <div class="how-step">
+                <div class="step-num">3</div>
+                <h3>The relay hands it to APNs</h3>
+                <p>
+                    The relay looks up your device token, writes the title and message, and pushes it through APNs.
+                    Apple delivers it to your iPhone within moments.
+                </p>
+            </div>
+        </div>
+
+        <div class="callout">
+            <ShieldQuestion size={22} />
+            <div>
+                <h3>Why can't Uptime Kuma talk to Apple directly?</h3>
+                <p>
+                    APNs only accepts pushes signed with a key that belongs to the developer of the app. That key can't
+                    live inside Uptime Kuma, so the relay holds it, keeps just your device token, and forwards each alert
+                    without storing its contents.{' '}
+                    <a href="/docs/how-it-works">Read the details</a> or{' '}
+                    <a href={LINKS.relaySource} target="_blank" rel="noopener noreferrer">browse the relay source</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>

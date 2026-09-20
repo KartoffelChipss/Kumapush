@@ -1,0 +1,44 @@
+---
+import Button from './ui/Button.astro';
+import { Container } from '@lucide/astro';
+---
+
+<section class="section" id="self-hosting">
+    <div class="wrap">
+        <div class="self">
+            <div>
+                <div class="eyebrow">Self-hosting</div>
+                <h2>Prefer to run your own relay?</h2>
+                <p class="lead">
+                    The relay is a single Go service backed by PostgreSQL. Bring your own APNs key, start it with
+                    Docker Compose, and enter its address under "Use custom relay" in the app.
+                </p>
+                <p class="note">
+                    APNs keys are tied to the Apple Developer team that signs the app, so a self-hosted relay needs a
+                    build of KumaPush signed with your own team. The{' '}
+                    <a href="/docs/self-hosting">self-hosting guide</a> covers this.
+                </p>
+                <Button href="/docs/self-hosting" variant="outline">
+                    <Container />
+                    Self-hosting guide
+                </Button>
+            </div>
+
+            <div class="codebox">
+                <div class="codebox-head">relay/</div>
+<pre><span class="c"># 1. configure</span>
+cp .env.example .env
+<span class="c">#    set POSTGRES_PASSWORD, APNS_KEY_ID,</span>
+<span class="c">#    APNS_TEAM_ID, APP_BUNDLE_IDENTIFIER</span>
+cp ~/AuthKey_XXXXXXXXXX.p8 ./authkey.p8
+
+<span class="c"># 2. start relay + PostgreSQL</span>
+docker compose up -d --build
+
+<span class="c"># 3. check it</span>
+curl http://localhost:4321/health
+<span class="c"># &#123;"status":"ok"&#125;</span></pre>
+            </div>
+        </div>
+    </div>
+</section>

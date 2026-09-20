@@ -1,0 +1,42 @@
+---
+import Logo from './icons/Logo.astro';
+import { LINKS, ANCHORS } from '../lib/links';
+---
+
+<footer>
+    <div class="wrap">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="f-logo">
+                    <Logo size={22} />
+                    KumaPush
+                </div>
+                <p class="footer-tagline">Push notifications from Uptime Kuma, straight to your iPhone.</p>
+                <p class="footer-disc">
+                    Not affiliated with or endorsed by Uptime Kuma or Apple. Apple and iPhone are trademarks of Apple
+                    Inc.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Project</h4>
+                <ul>
+                    <li><a href={LINKS.docs}>Docs</a></li>
+                    <li><a href={ANCHORS.how}>How it works</a></li>
+                    <li><a href={LINKS.github} target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                    <li><a href={LINKS.releases} target="_blank" rel="noopener noreferrer">Releases</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href={LINKS.issues} target="_blank" rel="noopener noreferrer">Report a bug</a></li>
+                    <li><a href={LINKS.relaySource} target="_blank" rel="noopener noreferrer">Relay source</a></li>
+                    <li><a href={LINKS.license} target="_blank" rel="noopener noreferrer">GPL-3.0 License</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bot">
+            <p>© 2026 KumaPush. Open source under GPL-3.0.</p>
+        </div>
+    </div>
+</footer>

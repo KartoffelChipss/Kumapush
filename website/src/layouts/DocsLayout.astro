@@ -1,0 +1,207 @@
+---
+import type { MarkdownHeading } from 'astro';
+import { getCollection } from 'astro:content';
+import { ArrowLeft, ArrowRight, Copy, Check, Link } from '@lucide/astro';
+
+import BaseLayout from './BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { docHref, getPrevNext, getSidebarSections, type DocEntry } from '../lib/docs';
+import '../styles/docs.css';
+
+interface Props {
+    entry: DocEntry;
+    headings?: MarkdownHeading[];
+}
+
+const { entry, headings = [] } = Astro.props;
+
+const allDocs = await getCollection('docs');
+const sections = getSidebarSections(allDocs);
+const currentHref = docHref(entry.id);
+const { prev, next } = getPrevNext(allDocs, entry.id);
+
+interface TocNode {
+    heading: MarkdownHeading;
+    children: MarkdownHeading[];
+}
+
+const tocTree: TocNode[] = [];
+for (const heading of headings) {
+    if (heading.depth === 2) {
+        tocTree.push({ heading, children: [] });
+    } else if (heading.depth === 3 && tocTree.length > 0) {
+        tocTree[tocTree.length - 1].children.push(heading);
+    }
+}
+---
+
+<BaseLayout
+    title={`${entry.data.title} — KumaPush Docs`}
+    description={entry.data.description}
+>
+    <Navbar />
+
+    <div class="docs-shell">
+        <input type="checkbox" id="docs-nav-toggle" class="docs-nav-toggle-input" />
+        <label for="docs-nav-toggle" class="docs-nav-toggle">
+            Menu
+        </label>
+
+        <aside class="docs-sidebar">
+            <nav class="docs-nav" aria-label="Docs navigation">
+                <a class={`docs-link${currentHref === '/docs' ? ' active' : ''}`} href="/docs">
+                    Overview
+                </a>
+
+                {sections.map((section) => (
+                    <div class="docs-section">
+                        {section.title && <p class="docs-section-title">{section.title}</p>}
+                        <ul>
+                            {section.entries.map((doc) => {
+                                const href = docHref(doc.id);
+                                return (
+                                    <li>
+                                        <a
+                                            class={`docs-link${href === currentHref ? ' active' : ''}`}
+                                            href={href}
+                                        >
+                                            {doc.data.title}
+                                        </a>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                ))}
+            </nav>
+        </aside>
+
+        <main class="docs-content">
+            <h1>{entry.data.title}</h1>
+            {entry.data.description && <p class="docs-lead">{entry.data.description}</p>}
+
+            <div class="docs-prose">
+                <slot />
+            </div>
+
+            {(prev || next) && (
+                <nav class="docs-pager" aria-label="Docs pagination">
+                    {prev && (
+                        <a class="docs-pager-link docs-pager-prev" href={docHref(prev.id)}>
+                            <span class="docs-pager-label"><ArrowLeft /> Previous</span>
+                            <span class="docs-pager-title">{prev.data.title}</span>
+                        </a>
+                    )}
+                    {next && (
+                        <a class="docs-pager-link docs-pager-next" href={docHref(next.id)}>
+                            <span class="docs-pager-label">Next <ArrowRight /></span>
+                            <span class="docs-pager-title">{next.data.title}</span>
+                        </a>
+                    )}
+                </nav>
+            )}
+        </main>
+
+        {tocTree.length > 0 && (
+            <aside class="docs-toc">
+                <p class="docs-toc-title">On this page</p>
+                <ul>
+                    {tocTree.map((node) => (
+                        <li>
+                            <a href={`#${node.heading.slug}`}>{node.heading.text}</a>
+                            {node.children.length > 0 && (
+                                <ul>
+                                    {node.children.map((child) => (
+                                        <li>
+                                            <a href={`#${child.slug}`}>{child.text}</a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            </aside>
+        )}
+    </div>
+
+    <Footer />
+
+    <div id="docs-icon-templates" hidden aria-hidden="true">
+        <Copy id="docs-icon-copy" size={14} />
+        <Check id="docs-icon-check" size={14} />
+        <Link id="docs-icon-link" size={14} />
+    </div>
+</BaseLayout>
+
+<script>
+    function iconTemplate(id: string) {
+        const svg = document.getElementById(id);
+        if (!svg) throw new Error(`Missing icon template: ${id}`);
+        return svg;
+    }
+
+    function cloneIcon(template: HTMLElement) {
+        const clone = template.cloneNode(true) as HTMLElement;
+        clone.removeAttribute('id');
+        return clone;
+    }
+
+    const copyIcon = iconTemplate('docs-icon-copy');
+    const checkIcon = iconTemplate('docs-icon-check');
+    const linkIcon = iconTemplate('docs-icon-link');
+
+    for (const heading of document.querySelectorAll('.docs-prose h2[id], .docs-prose h3[id]')) {
+        const anchor = document.createElement('a');
+        anchor.className = 'docs-heading-anchor';
+        anchor.href = `#${heading.id}`;
+        anchor.setAttribute('aria-label', 'Copy link to this section');
+        anchor.appendChild(cloneIcon(linkIcon));
+
+        anchor.addEventListener('click', async () => {
+            const url = `${location.origin}${location.pathname}#${heading.id}`;
+
+            try {
+                await navigator.clipboard.writeText(url);
+                anchor.classList.add('copied');
+                anchor.replaceChildren(cloneIcon(checkIcon));
+                setTimeout(() => {
+                    anchor.classList.remove('copied');
+                    anchor.replaceChildren(cloneIcon(linkIcon));
+                }, 1500);
+            } catch (err) {
+                console.error('Copy failed:', err);
+            }
+        });
+
+        heading.appendChild(anchor);
+    }
+
+    for (const pre of document.querySelectorAll('.docs-prose pre')) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'docs-copy-btn';
+        button.setAttribute('aria-label', 'Copy code');
+        button.appendChild(cloneIcon(copyIcon));
+
+        button.addEventListener('click', async () => {
+            const code = pre.querySelector('code');
+            const text = code ? code.textContent ?? '' : pre.textContent ?? '';
+
+            try {
+                await navigator.clipboard.writeText(text);
+                button.classList.add('copied');
+                button.replaceChildren(cloneIcon(checkIcon));
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.replaceChildren(cloneIcon(copyIcon));
+                }, 1500);
+            } catch (err) {
+                console.error('Copy failed:', err);
+            }
+        });
+
+        pre.appendChild(button);
+    }
+</script>

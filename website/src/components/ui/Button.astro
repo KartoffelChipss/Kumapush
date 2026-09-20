@@ -1,0 +1,16 @@
+---
+interface Props {
+    href: string;
+    variant?: 'primary' | 'outline';
+    size?: 'sm' | 'md';
+    newtab?: boolean;
+}
+
+const { href, variant = 'primary', size = 'md', newtab = false } = Astro.props;
+
+const cls = ['btn', size === 'sm' ? 'btn-sm' : 'btn-md', variant === 'primary' ? 'btn-p' : 'btn-o'].join(' ');
+---
+
+<a {href} class={cls} target={newtab ? '_blank' : undefined} rel={newtab ? 'noopener noreferrer' : undefined}>
+    <slot />
+</a>

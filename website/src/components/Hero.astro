@@ -1,0 +1,56 @@
+---
+import Button from './ui/Button.astro';
+import Logo from './icons/Logo.astro';
+import { BookOpen, ArrowDown } from '@lucide/astro';
+import { ANCHORS } from '../lib/links';
+---
+
+<section class="hero">
+    <div>
+        <h1>Uptime Kuma alerts, straight to your iPhone</h1>
+
+        <p class="hero-sub">
+            KumaPush turns your Uptime Kuma webhooks into real push notifications. No account, no polling, no
+            always-on app. Just an alert the moment something goes down.
+        </p>
+
+        <div class="hero-ctas">
+            <Button href="#get-started">
+                <BookOpen />
+                Get started
+            </Button>
+            <Button href={ANCHORS.how} variant="outline">
+                <ArrowDown />
+                How it works
+            </Button>
+        </div>
+    </div>
+
+    <div class="hero-visual" role="img" aria-label="Example KumaPush notifications on an iPhone lock screen">
+        <div class="notif">
+            <div class="notif-icon"><Logo size={22} /></div>
+            <div class="notif-body">
+                <div class="notif-head"><span>KumaPush</span><span>now</span></div>
+                <div class="notif-title"><span class="dot"></span>API is down</div>
+                <div class="notif-text">Request failed with status code 503</div>
+                <span class="notif-tag">Time Sensitive</span>
+            </div>
+        </div>
+        <div class="notif">
+            <div class="notif-icon"><Logo size={22} /></div>
+            <div class="notif-body">
+                <div class="notif-head"><span>KumaPush</span><span>2m ago</span></div>
+                <div class="notif-title"><span class="dot up"></span>Nextcloud is up</div>
+                <div class="notif-text">200 - OK</div>
+            </div>
+        </div>
+        <div class="notif">
+            <div class="notif-icon"><Logo size={22} /></div>
+            <div class="notif-body">
+                <div class="notif-head"><span>KumaPush</span><span>1h ago</span></div>
+                <div class="notif-title"><span class="dot up"></span>Home Assistant is up</div>
+                <div class="notif-text">200 - OK</div>
+            </div>
+        </div>
+    </div>
+</section>

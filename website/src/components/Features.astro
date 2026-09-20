@@ -1,0 +1,68 @@
+---
+import { Zap, BellRing, Timer, EyeOff, Container, Code, type Icon as IconType } from '@lucide/astro';
+
+interface FeatureItem {
+    icon: typeof IconType;
+    title: string;
+    description: string;
+}
+
+const features: FeatureItem[] = [
+    {
+        icon: Zap,
+        title: 'Real push, not polling',
+        description:
+            'Alerts arrive through APNs the moment your monitor changes state, even when KumaPush is closed or your phone is locked.',
+    },
+    {
+        icon: Timer,
+        title: 'Time Sensitive downtime',
+        description:
+            'Choose whether "down" alerts are delivered as Time Sensitive, so they break through Focus and Do Not Disturb.',
+    },
+    {
+        icon: BellRing,
+        title: 'Set up in a minute',
+        description:
+            'Tap Get Started, paste one webhook URL into Uptime Kuma, and press Test. That is the whole setup.',
+    },
+    {
+        icon: EyeOff,
+        title: 'No account, minimal data',
+        description:
+            'The relay stores only your device token and a hash of your auth token. Notification contents are never saved.',
+    },
+    {
+        icon: Container,
+        title: 'Self-hostable relay',
+        description:
+            'Run the relay yourself with the included Docker Compose setup and point the app at it with a custom relay address.',
+    },
+    {
+        icon: Code,
+        title: 'Open source',
+        description:
+            'The iOS app and the Go relay are both open source under GPL-3.0. Read it, audit it, improve it.',
+    },
+];
+---
+
+<section class="section" id="features">
+    <div class="wrap">
+        <div class="sh">
+            <div class="eyebrow">Features</div>
+            <h2>Built to do one thing well</h2>
+            <p class="lead">Know when something breaks, without another dashboard to check.</p>
+        </div>
+
+        <div class="feat-grid">
+            {features.map((feature) => (
+                <div class="feat-card">
+                    <div class="feat-ico"><feature.icon size={18} /></div>
+                    <h3>{feature.title}</h3>
+                    <p>{feature.description}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+</section>

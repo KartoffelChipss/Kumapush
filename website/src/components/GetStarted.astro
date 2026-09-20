@@ -1,0 +1,50 @@
+---
+import Button from './ui/Button.astro';
+import { BookOpen } from '@lucide/astro';
+---
+
+<section class="section alt" id="get-started">
+    <div class="wrap">
+        <div class="sh">
+            <div class="eyebrow">Get started</div>
+            <h2>Three steps to your first alert</h2>
+        </div>
+
+        <div>
+                <ol class="start-steps">
+                    <li>
+                        <div class="step-num">1</div>
+                        <div>
+                            <h3>Open KumaPush and tap Get Started</h3>
+                            <p>Allow notifications when iOS asks. The app registers your phone with the relay.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-num">2</div>
+                        <div>
+                            <h3>Add a Webhook notification in Uptime Kuma</h3>
+                            <p>
+                                Paste your personal URL from the app as the <code>Post URL</code> and set the request
+                                body to <code>Preset - application/json</code>.
+                            </p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-num">3</div>
+                        <div>
+                            <h3>Press Test</h3>
+                            <p>
+                                A notification should land on your phone within seconds. Attach it to your monitors
+                                and you're done.
+                            </p>
+                        </div>
+                    </li>
+                </ol>
+
+                <Button href="/docs/getting-started" variant="outline">
+                    <BookOpen />
+                    Read the full guide
+                </Button>
+            </div>
+    </div>
+</section>
