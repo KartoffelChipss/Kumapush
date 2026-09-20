@@ -22,6 +22,7 @@ struct CopyableValue: View {
             } label: {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
             }
+            .frame(width: 22, height: 22)
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
         }
