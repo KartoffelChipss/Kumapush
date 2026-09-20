@@ -81,14 +81,15 @@ struct RegisteredView: View {
                 Button(role: .destructive) {
                     showingUnregisterConfirmation = true
                 } label: {
-                    Group {
-                        if isUnregistering {
-                            ProgressView()
-                        } else {
-                            Text("Unregister Device")
+                    Text("Unregister Device")
+                        .opacity(isUnregistering ? 0 : 1)
+                        .overlay {
+                            if isUnregistering {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
                         }
-                    }
-                    .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)

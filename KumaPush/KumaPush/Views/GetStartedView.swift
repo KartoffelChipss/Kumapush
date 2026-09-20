@@ -31,14 +31,15 @@ struct GetStartedView: View {
                     relayOption = .defaultRelay
                     onGetStarted()
                 } label: {
-                    Group {
-                        if isRegistering {
-                            ProgressView()
-                        } else {
-                            Text("Get Started")
+                    Text("Get Started")
+                        .opacity(isRegistering ? 0 : 1)
+                        .overlay {
+                            if isRegistering {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
                         }
-                    }
-                    .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
@@ -109,14 +110,15 @@ private struct CustomRelaySheet: View {
                 .onSubmit { if canConnect { onConnect() } }
 
             Button(action: onConnect) {
-                Group {
-                    if isRegistering {
-                        ProgressView()
-                    } else {
-                        Text("Continue")
+                Text("Continue")
+                    .opacity(isRegistering ? 0 : 1)
+                    .overlay {
+                        if isRegistering {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
                     }
-                }
-                .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
