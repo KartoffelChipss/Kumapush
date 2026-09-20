@@ -26,6 +26,6 @@ struct CopyableValue: View {
             .foregroundStyle(.secondary)
         }
         .padding(10)
-        .background(.background, in: RoundedRectangle(cornerRadius: 8))
+        .background(Color.appBackground, in: RoundedRectangle(cornerRadius: 8))
     }
 }

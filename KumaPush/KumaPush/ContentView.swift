@@ -36,6 +36,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
         }
+        .background(Color.appBackground.ignoresSafeArea())
         .task {
             await viewModel.start()
         }
