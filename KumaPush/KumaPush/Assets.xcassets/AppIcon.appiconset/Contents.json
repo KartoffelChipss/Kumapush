@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "logo-light.png",
+      "filename" : "logo-new-bell.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "logo-dark.png",
+      "filename" : "logo-new-bell-dark.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "logo-tinted.png",
+      "filename" : "logo-new-bell-tinted.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
