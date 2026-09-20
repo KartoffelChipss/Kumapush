@@ -1,0 +1,57 @@
+name: Deploy website
+
+on:
+    release:
+        types: [published]
+
+permissions:
+    contents: write
+
+concurrency:
+    group: website-deploy
+    cancel-in-progress: false
+
+env:
+    VERSION: ${{ github.event.release.tag_name }}
+
+jobs:
+    deploy:
+        name: Build and deploy to gh-pages
+        if: startsWith(github.event.release.tag_name, 'website@')
+        runs-on: ubuntu-24.04
+        defaults:
+            run:
+                working-directory: website
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '24'
+
+            - name: Install pnpm
+              run: npm install -g pnpm@10
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build
+              run: pnpm run build
+
+            - name: Prepare static output
+              run: |
+                  touch dist/.nojekyll
+
+            - name: Push to gh-pages
+              working-directory: website/dist
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  git init --initial-branch=gh-pages
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add -A
+                  git commit -m "Deploy ${VERSION} (${GITHUB_SHA})"
+                  git push --force \
+                    "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+                    gh-pages:gh-pages
