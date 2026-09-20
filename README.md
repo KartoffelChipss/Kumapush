@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://kumapush.com">
+    <img src="./.github/assets/icon.webp" alt="KumaPush" width="128" />
+  </a>
+</p>
+
 # KumaPush
 
 Get Uptime Kuma downtime alerts as push notifications on your iPhone. Set up in under a minute, with optional Time Sensitive delivery that breaks through Focus.
