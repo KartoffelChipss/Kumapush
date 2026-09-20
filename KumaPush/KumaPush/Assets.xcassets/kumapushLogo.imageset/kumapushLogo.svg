@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="150" height="150" viewBox="0 0 500 500" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:affinity="https://www.affinity.studio/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;">
+    <g transform="matrix(1,0,0,1,-2,-3394)">
+        <g id="logo-new-bell-nobg" transform="matrix(0.651042,0,0,0.651042,383.510417,3304.807292)">
+            <rect x="-586" y="137" width="768" height="768" style="fill:none;"/>
+            <g transform="matrix(1.172973,0,0,1.172973,34.940549,-90.11894)">
+                <g transform="matrix(28.416118,0,0,28.416118,-543.008887,180.007831)">
+                    <path d="M10.268,21C10.625,21.618 11.286,22 12,22C12.714,22 13.375,21.618 13.732,21" style="fill:none;fill-rule:nonzero;stroke:rgb(30,132,115);stroke-width:2px;"/>
+                </g>
+                <g transform="matrix(2.717538,0,0,2.717538,-806.356923,-7726.847385)">
+                    <circle cx="245" cy="3039" r="13" style="fill:rgb(30,132,115);"/>
+                </g>
+                <g transform="matrix(2.717538,0,0,2.717538,-929.236923,-7726.847385)">
+                    <circle cx="245" cy="3039" r="13" style="fill:rgb(30,132,115);"/>
+                </g>
+                <g transform="matrix(28.416118,0,0,28.416118,-543.008887,180.007831)">
+                    <path d="M3.262,15.326C3.094,15.51 3.001,15.751 3.001,16C3.001,16.548 3.452,17 4,17C4,17 20,17 20,17C20.549,17 21,16.549 21,16C21,15.751 20.907,15.511 20.74,15.327C19.41,13.956 18,12.499 18,8C18,4.708 15.292,2 12,2C8.708,2 6,4.708 6,8C6,12.499 4.589,13.956 3.262,15.326" style="fill:none;fill-rule:nonzero;stroke:rgb(30,132,115);stroke-width:2px;"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
