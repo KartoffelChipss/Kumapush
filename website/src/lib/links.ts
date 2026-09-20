@@ -5,6 +5,7 @@ export const LINKS = {
     docs: '/docs',
     privacy: '/privacy',
     terms: '/terms',
+    impressum: '/impressum',
     github: REPO,
     releases: `${REPO}/releases`,
     issues: `${REPO}/issues`,
