@@ -28,11 +28,6 @@ You can read the full setup guide [here](https://kumapush.com/docs/getting-start
     <td>
       <img src="./.github/assets/registered.webp" />
     </td>
-  </tr>
-  <tr>
-    <td>
-      <img src="./.github/assets/custom_relay.webp" />
-    </td>
     <td>
       <img src="./.github/assets/notification.webp" />
     </td>
