@@ -111,6 +111,10 @@ struct RegisteredView: View {
                         .foregroundStyle(.red)
                 }
             }
+
+            if LegalDocuments.covers(relayURL: relayBaseURL) {
+                LegalLinksFooter()
+            }
         }
     }
 }

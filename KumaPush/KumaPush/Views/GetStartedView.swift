@@ -45,6 +45,8 @@ struct GetStartedView: View {
                 .controlSize(.large)
                 .disabled(isRegistering)
 
+                LegalConsentText()
+
                 Button("Use custom relay") {
                     customRelayAttempted = false
                     showingCustomRelay = true
