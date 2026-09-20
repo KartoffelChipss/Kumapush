@@ -93,6 +93,16 @@ struct RegisteredView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.large)
                 .disabled(isUnregistering)
+                .confirmationDialog(
+                    "Unregister this device?",
+                    isPresented: $showingUnregisterConfirmation,
+                    titleVisibility: .visible
+                ) {
+                    Button("Unregister Device", role: .destructive, action: onUnregister)
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("You'll stop receiving push notifications until you register again.")
+                }
 
                 if let errorMessage {
                     Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
@@ -100,16 +110,6 @@ struct RegisteredView: View {
                         .foregroundStyle(.red)
                 }
             }
-        }
-        .confirmationDialog(
-            "Unregister this device?",
-            isPresented: $showingUnregisterConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Unregister Device", role: .destructive, action: onUnregister)
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("You'll stop receiving push notifications until you register again.")
         }
     }
 }
