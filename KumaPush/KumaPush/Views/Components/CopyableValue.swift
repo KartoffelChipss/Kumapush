@@ -3,6 +3,7 @@ import UIKit
 
 struct CopyableValue: View {
     let value: String
+    let label: String
     @State private var copied = false
 
     var body: some View {
@@ -18,10 +19,12 @@ struct CopyableValue: View {
             Button {
                 UIPasteboard.general.string = value
                 copied = true
+                AccessibilityNotification.Announcement("Copied").post()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
             } label: {
                 Image(systemName: copied ? "checkmark" : "doc.on.doc")
             }
+            .accessibilityLabel("Copy \(label)")
             .frame(width: 22, height: 22)
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)

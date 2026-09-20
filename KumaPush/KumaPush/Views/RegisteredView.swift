@@ -20,6 +20,7 @@ struct RegisteredView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 44))
                     .foregroundStyle(.accent)
+                    .accessibilityHidden(true)
                 Text("You're all set!")
                     .font(.title2.bold())
             }
@@ -28,7 +29,7 @@ struct RegisteredView: View {
                 Text("YOUR DEVICE ID")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                CopyableValue(value: device.id)
+                CopyableValue(value: device.id, label: "device ID")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
@@ -44,7 +45,7 @@ struct RegisteredView: View {
                 InstructionStep(number: 2) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Set the **Post URL** to:")
-                        CopyableValue(value: webhookURLString)
+                        CopyableValue(value: webhookURLString, label: "webhook URL")
                     }
                 }
                 InstructionStep(number: 3) {

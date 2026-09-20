@@ -18,6 +18,7 @@ struct GetStartedView: View {
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 44))
                     .foregroundStyle(.tint)
+                    .accessibilityHidden(true)
                 Text("Welcome to KumaPush")
                     .font(.title2.bold())
                 Text("Get push notifications from Uptime Kuma sent straight to this device.")
