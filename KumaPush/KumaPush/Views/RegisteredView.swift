@@ -19,7 +19,7 @@ struct RegisteredView: View {
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 44))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(.accent)
                 Text("You're all set!")
                     .font(.title2.bold())
             }
