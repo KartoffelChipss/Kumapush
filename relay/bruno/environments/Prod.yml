@@ -1,0 +1,5 @@
+name: Prod
+variables:
+  - name: base-url
+    value: https://relay.kumapush.com
+    description: ""
