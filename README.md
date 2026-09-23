@@ -8,6 +8,10 @@
 
 Get Uptime Kuma downtime alerts as push notifications on your iPhone. Set up in under a minute, with optional Time Sensitive delivery that breaks through Focus.
 
+## Download
+
+[<img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83" alt="Download on the App Store">](https://apps.apple.com/app/kumapush/id6813993163)
+
 ## Getting Started
 
 1. **Open KumaPush and tap Get Started**
