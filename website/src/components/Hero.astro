@@ -1,8 +1,9 @@
 ---
 import Button from './ui/Button.astro';
 import Logo from './icons/Logo.astro';
+import AppStore from './icons/AppStore.astro';
 import { BookOpen, ArrowDown } from '@lucide/astro';
-import { ANCHORS } from '../lib/links';
+import { ANCHORS, LINKS } from '../lib/links';
 ---
 
 <section class="hero">
@@ -15,7 +16,11 @@ import { ANCHORS } from '../lib/links';
         </p>
 
         <div class="hero-ctas">
-            <Button href="#get-started">
+            <Button href={LINKS.appStore} newtab={true}>
+                <AppStore />
+                Download on the App Store
+            </Button>
+            <Button href="#get-started" variant="outline">
                 <BookOpen />
                 Get started
             </Button>

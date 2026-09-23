@@ -7,6 +7,7 @@ export const LINKS = {
     terms: '/terms',
     impressum: '/impressum',
     github: REPO,
+    appStore: 'https://apps.apple.com/app/kumapush/id6813993163',
     releases: `${REPO}/releases`,
     issues: `${REPO}/issues`,
     license: `${REPO}/blob/main/LICENSE`,

@@ -4,6 +4,7 @@ import Github from './icons/Github.astro';
 import Button from './ui/Button.astro';
 import { Menu, X } from '@lucide/astro';
 import { LINKS, ANCHORS } from '../lib/links';
+import AppStore from './icons/AppStore.astro';
 ---
 
 <nav class="site-nav" aria-label="Main">
@@ -19,11 +20,18 @@ import { LINKS, ANCHORS } from '../lib/links';
             <li><a href={ANCHORS.start}>Get started</a></li>
             <li><a href={LINKS.docs}>Docs</a></li>
             <li class="mobile-link">
+                <a href={LINKS.appStore} target="_blank" rel="noopener noreferrer">App Store</a>
+            </li>
+            <li class="mobile-link">
                 <a href={LINKS.github} target="_blank" rel="noopener noreferrer">GitHub</a>
             </li>
         </ul>
 
         <div class="nav-r">
+            <Button href={LINKS.appStore} size="sm" variant="outline" newtab={true}>
+                <AppStore />
+                App Store
+            </Button>
             <Button href={LINKS.github} size="sm" variant="outline" newtab={true}>
                 <Github />
                 GitHub
